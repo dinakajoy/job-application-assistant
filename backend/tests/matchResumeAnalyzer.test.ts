@@ -1,7 +1,16 @@
 import { OpenAI } from "openai";
-import { analyzeResumeForJobDescription } from "../src/services/job.services"; // Adjust the path based on your project structure
+import { resumeForJobDescriptionAnalyzer } from "../src/services/job.services";
 
-jest.mock("openai");
+// Mock the OpenAI constructor and its methods
+jest.mock("openai", () => {
+  return jest.fn().mockImplementation(() => ({
+    completions: {
+      create: jest.fn().mockResolvedValue({
+        choices: [{ message: { content: JSON.stringify({ score: 85 }) } }],
+      }),
+    },
+  }));
+});
 
 const mockOpenAI = new OpenAI({ apiKey: "test-key" });
 
@@ -16,7 +25,7 @@ describe("analyzeResume", () => {
       mockResponse
     );
 
-    const result = await analyzeResumeForJobDescription(
+    const result = await resumeForJobDescriptionAnalyzer(
       "Job description here",
       "Resume text here"
     );
@@ -29,7 +38,10 @@ describe("analyzeResume", () => {
     );
 
     await expect(
-      analyzeResumeForJobDescription("Job description here", "Resume text here")
+      resumeForJobDescriptionAnalyzer(
+        "Job description here",
+        "Resume text here"
+      )
     ).rejects.toThrow("Failed to analyze resume");
   });
 });

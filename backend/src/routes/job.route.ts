@@ -1,22 +1,47 @@
 import { Router } from "express";
 import upload from "../middlewares/upload";
-import { analyzeJob, analyzeResumeForJob } from "../controllers/job.controller";
 import {
-  jobValidation,
-  matchResumeValidation,
+  coverLetterValidation,
+  jobDescriptionValidation,
+  resumeAndJobDescriptionValidation,
   validate,
 } from "../validations/job.validation";
+import {
+  analyzeJobDescription,
+  analyzeResumeForJob,
+  generateCoverLetter,
+  suggestResumeImprovements,
+} from "../controllers/job.controller";
 
 const router = Router();
 
-router.post("/analyze", jobValidation(), validate, analyzeJob);
+router.post(
+  "/analyze",
+  jobDescriptionValidation(),
+  validate,
+  analyzeJobDescription
+);
 
 router.post(
   "/match-resume",
   upload.single("resume"),
-  matchResumeValidation(),
+  resumeAndJobDescriptionValidation(),
   validate,
   analyzeResumeForJob
+);
+
+router.post(
+  "/resume-improvements",
+  resumeAndJobDescriptionValidation(),
+  validate,
+  suggestResumeImprovements
+);
+
+router.post(
+  "/generate-cover-letter",
+  coverLetterValidation(),
+  validate,
+  generateCoverLetter
 );
 
 export default router;

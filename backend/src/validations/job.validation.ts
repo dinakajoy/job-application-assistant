@@ -1,7 +1,7 @@
-import { body, validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
+import { body, validationResult } from "express-validator";
 
-export const jobValidation = () => [
+export const jobDescriptionValidation = () => [
   body("description")
     .not()
     .isEmpty()
@@ -11,7 +11,7 @@ export const jobValidation = () => [
     .withMessage("Job description must be at least 10 characters long"),
 ];
 
-export const matchResumeValidation = () => [
+export const resumeAndJobDescriptionValidation = () => [
   body("description")
     .not()
     .isEmpty()
@@ -28,6 +28,22 @@ export const matchResumeValidation = () => [
     }
     return true;
   }),
+];
+
+export const coverLetterValidation = () => [
+  body("applicantName")
+    .notEmpty()
+    .trim()
+    .isLength({ min: 3 })
+    .escape()
+    .withMessage("Applicant name is required"),
+  body("description")
+    .not()
+    .isEmpty()
+    .trim()
+    .isLength({ min: 10 })
+    .escape()
+    .withMessage("Job description must be at least 10 characters long"),
 ];
 
 export const validate = (req: Request, res: Response, next: NextFunction) => {
