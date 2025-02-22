@@ -23,15 +23,13 @@ const JobAnalysisPage = () => {
       const data: IResponse = await response.json();
       if (data.status === "error") {
         setError(data.message || "There was an error! Try again");
-        return;
-      }
-      if (data.payload) {
-        setAnalysisResult(data.payload);
-        return;
-      }
-      if (data.message) {
-        setAnalysisResult(data.message);
-        return;
+      } else {
+        if (data.payload) {
+          setAnalysisResult(data.payload);
+        }
+        if (!data.payload && data.message) {
+          setAnalysisResult(data.message);
+        }
       }
     } catch (error) {
       console.error("Error analyzing job description", error);

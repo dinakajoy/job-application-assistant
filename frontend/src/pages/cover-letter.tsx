@@ -37,7 +37,6 @@ const CoverLetterGeneratorPage = () => {
           setCoverLetter(data.payload);
         }
       }
-      console.log("coverLetter ==============", coverLetter);
     } catch (error) {
       console.error("Error generating cover letter:", error);
     }
