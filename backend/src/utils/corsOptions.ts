@@ -1,6 +1,9 @@
 import { CorsOptions } from "cors";
 
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://job-application-assistant.vercel.app",
+];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
