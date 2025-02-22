@@ -35,12 +35,11 @@ export const analyzeJobDescription = async (
 
 export const analyzeResumeForJob = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
-    const { description } = req.body;
-    if (!description) {
+    const { jobDescription } = req.body;
+    if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
@@ -59,13 +58,13 @@ export const analyzeResumeForJob = async (
     const pdfText = await pdf(resumeFile.buffer);
     const resumeText = pdfText.text;
     const matchScore = await resumeForJobDescriptionAnalyzer(
-      description,
+      jobDescription,
       resumeText
     );
 
     res.status(200).json({
       status: "success",
-      payload: `${matchScore}%`,
+      payload: `${matchScore}`,
     });
     return;
   } catch (error: any) {

@@ -10,11 +10,10 @@ const app = express();
 
 app.use(
   acountLimiter,
-  // cors(corsOptions),
-  cors(),
+  cors(corsOptions),
   compression(),
-  express.json(),
-  express.urlencoded({ extended: false })
+  express.json({ limit: "6mb" }),
+  express.urlencoded({ extended: true, limit: "6mb" })
 );
 
 app.get("/healthcheck", (req: Request, res: Response) => {

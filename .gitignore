@@ -4,3 +4,4 @@ logs
 coverage
 dist
 backend/dist
+/dist

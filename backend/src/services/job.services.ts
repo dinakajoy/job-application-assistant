@@ -5,18 +5,6 @@ const apiKey = config.get("environment.apiKey") as string;
 
 const openai = new OpenAI({ apiKey });
 
-// export const jobDescriptionAnalyzer = async (jobDescription: string) => {
-//   const prompt = `Extract key skills and responsibilities from this job description:\n${jobDescription}`;
-
-//   const response = await openai.chat.completions.create({
-//     model: "gpt-4",
-//     messages: [{ role: "user", content: prompt }],
-//     max_tokens: 200,
-//   });
-
-//   return response.choices[0].text?.trim() || "";
-// };
-
 export const jobDescriptionAnalyzer = async (jobDescription: string) => {
   const response = await openai.chat.completions.create({
     model: "gpt-4",
@@ -33,7 +21,6 @@ export const jobDescriptionAnalyzer = async (jobDescription: string) => {
     ],
     max_tokens: 200,
   });
-  console.log("==================== response", response.choices[0]?.message);
 
   return response.choices[0]?.message?.content?.trim() || "";
 };
@@ -42,29 +29,24 @@ export const resumeForJobDescriptionAnalyzer = async (
   jobDescription: string,
   resumeText: string
 ): Promise<number> => {
-  const prompt = `
-    You are an AI that calculates a match percentage between a job description and a resume.
-    - Analyze the job description and extract required skills.
-    - Analyze the resume and extract listed skills and experience.
-    - Compare both and return a match percentage (0-100%).
-  
-    Job Description:
-    ${jobDescription}
-  
-    Resume:
-    ${resumeText}
-  
-    Output format:
-    { "matchPercentage": 75 } (example)
-    `;
-
   const response = await openai.chat.completions.create({
     model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that compares a resume against a job description and provides a match percentage based on skill relevance.",
+      },
+      {
+        role: "user",
+        content: `Compare this resume to the job description and return a match percentage from 0% to 100% based on skills and experience relevance.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in the format: {"matchPercentage": number}`,
+      },
+    ],
     max_tokens: 100,
   });
 
-  const matchData = JSON.parse(response.choices[0].message.content || "{}");
+  const matchData = JSON.parse(response.choices[0].message.content || "");
+
   return matchData.matchPercentage || 0;
 };
 

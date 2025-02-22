@@ -11,12 +11,16 @@ const Feature = ({
   link: string;
 }) => {
   return (
-    <Link href={link}>
-      <div className="p-4 bg-white shadow-md rounded-lg cursor-pointer hover:bg-gray-200 transition">
-        <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
-        <p className="mt-2 text-gray-600">{description}</p>
-      </div>
-    </Link>
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+      <p className="text-gray-600 mt-2">{description}</p>
+      <Link
+        href={link}
+        className="text-blue-600 hover:underline mt-4 inline-block"
+      >
+        Learn More →
+      </Link>
+    </div>
   );
 };
 
