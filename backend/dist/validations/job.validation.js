@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.validate = exports.coverLetterValidation = exports.resumeAndJobDescriptionValidation = exports.jobDescriptionValidation = void 0;
 const express_validator_1 = require("express-validator");
 const jobDescriptionValidation = () => [
-    (0, express_validator_1.body)("description")
+    (0, express_validator_1.body)("jobDescription")
         .not()
         .isEmpty()
         .trim()
@@ -13,7 +13,7 @@ const jobDescriptionValidation = () => [
 ];
 exports.jobDescriptionValidation = jobDescriptionValidation;
 const resumeAndJobDescriptionValidation = () => [
-    (0, express_validator_1.body)("description")
+    (0, express_validator_1.body)("jobDescription")
         .not()
         .isEmpty()
         .trim()
@@ -32,13 +32,9 @@ const resumeAndJobDescriptionValidation = () => [
 ];
 exports.resumeAndJobDescriptionValidation = resumeAndJobDescriptionValidation;
 const coverLetterValidation = () => [
-    (0, express_validator_1.body)("applicantName")
-        .notEmpty()
-        .trim()
-        .isLength({ min: 3 })
-        .escape()
-        .withMessage("Applicant name is required"),
-    (0, express_validator_1.body)("description")
+    (0, express_validator_1.body)("applicantName").trim().escape(),
+    (0, express_validator_1.body)("resume").trim().escape(),
+    (0, express_validator_1.body)("jobDescription")
         .not()
         .isEmpty()
         .trim()

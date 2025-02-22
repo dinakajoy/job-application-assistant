@@ -31,12 +31,8 @@ export const resumeAndJobDescriptionValidation = () => [
 ];
 
 export const coverLetterValidation = () => [
-  body("applicantName")
-    .notEmpty()
-    .trim()
-    .isLength({ min: 3 })
-    .escape()
-    .withMessage("Applicant name is required"),
+  body("applicantName").trim().escape(),
+  body("resume").trim().escape(),
   body("jobDescription")
     .not()
     .isEmpty()

@@ -8,9 +8,10 @@ const http_errors_1 = __importDefault(require("http-errors"));
 const compression_1 = __importDefault(require("compression"));
 const cors_1 = __importDefault(require("cors"));
 const job_route_1 = __importDefault(require("./routes/job.route"));
+const corsOptions_1 = __importDefault(require("./utils/corsOptions"));
 const acountLimiter_1 = __importDefault(require("./utils/acountLimiter"));
 const app = (0, express_1.default)();
-app.use(acountLimiter_1.default, (0, cors_1.default)(), (0, compression_1.default)(), express_1.default.json(), express_1.default.urlencoded({ extended: false }));
+app.use(acountLimiter_1.default, (0, cors_1.default)(corsOptions_1.default), (0, compression_1.default)(), express_1.default.json({ limit: "6mb" }), express_1.default.urlencoded({ extended: true, limit: "6mb" }));
 app.get("/healthcheck", (req, res) => {
     res.sendStatus(200);
 });

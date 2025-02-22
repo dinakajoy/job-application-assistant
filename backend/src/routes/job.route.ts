@@ -32,6 +32,7 @@ router.post(
 
 router.post(
   "/resume-improvements",
+  upload.single("resume"),
   resumeAndJobDescriptionValidation(),
   validate,
   suggestResumeImprovements

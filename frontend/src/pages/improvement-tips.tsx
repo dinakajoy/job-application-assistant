@@ -1,12 +1,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
-import { IResponse } from "@/types/types";
+import { ISugestionResponse } from "@/types/types";
 
-const ResumeMatchPage = () => {
+const ResumeImprovementTipsPage = () => {
   const [jobDescription, setJobDescription] = useState("");
   const [resume, setResume] = useState<File | null>(null);
-  const [matchScore, setMatchScore] = useState<string | null>(null);
+  const [suggestedKeywords, setSuggestedKeywords] = useState<string[] | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -26,17 +28,17 @@ const ResumeMatchPage = () => {
 
   const handleMatchResume = async () => {
     if (!jobDescription.trim()) {
-      setMatchScore(null);
+      setSuggestedKeywords(null);
       setError("Please enter a job description.");
       return;
     }
     if (!resume) {
-      setMatchScore(null);
+      setSuggestedKeywords(null);
       setError("Please upload your resume.");
       return;
     }
     setError(null);
-    setMatchScore(null);
+    setSuggestedKeywords(null);
     setLoading(true);
     try {
       const formData = new FormData();
@@ -44,23 +46,20 @@ const ResumeMatchPage = () => {
       formData.append("jobDescription", jobDescription);
 
       const response = await fetch(
-        "http://localhost:1337/api/jobs/match-resume",
+        "http://localhost:1337/api/jobs/resume-improvements",
         {
           method: "POST",
           body: formData,
         }
       );
-      const data: IResponse = await response.json();
+      const data: ISugestionResponse = await response.json();
       if (data.status === "error") {
-        setMatchScore(null);
+        setSuggestedKeywords(null);
         setError(data.message || "There was an error! Try again");
       } else {
         if (data.payload) {
           setError(null);
-          setMatchScore(data.payload);
-        }
-        if (!data.payload && data.message) {
-          setMatchScore(data.message);
+          setSuggestedKeywords(data.payload);
         }
       }
     } catch (error) {
@@ -73,7 +72,7 @@ const ResumeMatchPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
       <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Resume Match Score
+          Resume Keyword Suggestion
         </h1>
         <textarea
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
@@ -113,21 +112,23 @@ const ResumeMatchPage = () => {
           onClick={handleMatchResume}
           disabled={loading}
         >
-          {loading ? "Matching..." : "Get Match Score"}
+          {loading ? "Analyzing..." : "Suggest Keywords"}
         </button>
 
-        {matchScore !== null &&
-          (Number(matchScore) < 50 ? (
-            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
-              <h3 className="text-xl font-semibold">Resume Match Score</h3>
-              <p className="text-2xl font-bold">{matchScore}%</p>
-            </div>
-          ) : (
-            <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-lg text-center">
-              <h3 className="text-xl font-semibold">Resume Match Score</h3>
-              <p className="text-2xl font-bold">{matchScore}%</p>
-            </div>
-          ))}
+        {suggestedKeywords && suggestedKeywords.length > 0 && (
+          <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Suggested Keywords:
+            </h2>
+            <ul className="list-disc list-inside mt-2">
+              {suggestedKeywords.map((keyword, index) => (
+                <li key={index} className="text-gray-700">
+                  {keyword}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Home Page Link */}
         <div className="mt-6 text-center">
@@ -140,4 +141,4 @@ const ResumeMatchPage = () => {
   );
 };
 
-export default ResumeMatchPage;
+export default ResumeImprovementTipsPage;

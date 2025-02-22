@@ -54,38 +54,56 @@ export const getResumeImprovements = async (
   jobDescription: string,
   resumeText: string
 ): Promise<string> => {
-  const prompt = `
-      Analyze the following resume and job description.
-      Identify missing keywords or skills from the job description that should be in the resume.
-      Suggest specific improvements.
-
-      Job Description:
-      ${jobDescription}
-
-      Resume:
-      ${resumeText}
-
-      Provide a list of missing keywords and a short improvement suggestion.
-    `;
-
   const response = await openai.chat.completions.create({
     model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 200,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that suggests missing keywords in a resume based on a given job description to improve its relevance.",
+      },
+      {
+        role: "user",
+        content: `Analyze the following resume and job description. Suggest missing keywords or phrases that the resume should include to better match the job description.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in JSON format: { "suggestedKeywords": ["keyword1", "keyword2", ...] }`,
+      },
+    ],
+    max_tokens: 150,
   });
+  const result = JSON.parse(
+    response.choices[0]?.message?.content?.trim() || ""
+  );
 
-  return response.choices[0]?.message?.content || "No suggestions available";
+  return result.suggestedKeywords || [];
 };
 
 export const getCoverLetter = async (
   applicantName: string,
-  jobDescription: string
+  jobDescription: string,
+  resume: string
 ): Promise<string> => {
-  const prompt = `Generate a professional cover letter for ${applicantName} applying for this job:\n\n"${jobDescription}"\n\n The cover letter should be formal and engaging.`;
+  let userPrompt = `Write a professional cover letter for the following job description:\n${jobDescription}`;
+
+  if (applicantName) {
+    userPrompt = `The applicant's name is ${applicantName}.\n` + userPrompt;
+  }
+
+  if (resume) {
+    userPrompt += `\nHere is the applicant's resume:\n${resume}`;
+  }
 
   const response = await openai.chat.completions.create({
     model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that generates tailored cover letters based on job descriptions.",
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
     max_tokens: 300,
   });
 

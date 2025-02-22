@@ -3,3 +3,9 @@ export interface IResponse {
   message?: string;
   payload?: string;
 }
+
+export interface ISugestionResponse {
+  status: string;
+  message?: string;
+  payload?: string[];
+}

@@ -18,14 +18,14 @@ const job_services_1 = require("../services/job.services");
 const logger_1 = __importDefault(require("../utils/logger"));
 const analyzeJobDescription = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { description } = req.body;
-        if (!description) {
+        const { jobDescription } = req.body;
+        if (!jobDescription) {
             res
                 .status(400)
                 .json({ status: "error", message: "Job description is required" });
             return;
         }
-        const payload = yield (0, job_services_1.jobDescriptionAnalyzer)(description);
+        const payload = yield (0, job_services_1.jobDescriptionAnalyzer)(jobDescription);
         res.status(200).json({ status: "success", payload });
         return;
     }
@@ -38,10 +38,10 @@ const analyzeJobDescription = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.analyzeJobDescription = analyzeJobDescription;
-const analyzeResumeForJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const analyzeResumeForJob = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { description } = req.body;
-        if (!description) {
+        const { jobDescription } = req.body;
+        if (!jobDescription) {
             res
                 .status(400)
                 .json({ status: "error", message: "Job description is required" });
@@ -56,10 +56,10 @@ const analyzeResumeForJob = (req, res, next) => __awaiter(void 0, void 0, void 0
         }
         const pdfText = yield (0, pdf_parse_1.default)(resumeFile.buffer);
         const resumeText = pdfText.text;
-        const matchScore = yield (0, job_services_1.resumeForJobDescriptionAnalyzer)(description, resumeText);
+        const matchScore = yield (0, job_services_1.resumeForJobDescriptionAnalyzer)(jobDescription, resumeText);
         res.status(200).json({
             status: "success",
-            payload: `${matchScore}%`,
+            payload: `${matchScore}`,
         });
         return;
     }
@@ -72,10 +72,10 @@ const analyzeResumeForJob = (req, res, next) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.analyzeResumeForJob = analyzeResumeForJob;
-const suggestResumeImprovements = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const suggestResumeImprovements = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { description } = req.body;
-        if (!description) {
+        const { jobDescription } = req.body;
+        if (!jobDescription) {
             res
                 .status(400)
                 .json({ status: "error", message: "Job description is required" });
@@ -90,10 +90,10 @@ const suggestResumeImprovements = (req, res, next) => __awaiter(void 0, void 0, 
         }
         const pdfText = yield (0, pdf_parse_1.default)(resumeFile.buffer);
         const resumeText = pdfText.text;
-        const matchScore = yield (0, job_services_1.getResumeImprovements)(description, resumeText);
+        const suggestedKeywords = yield (0, job_services_1.getResumeImprovements)(jobDescription, resumeText);
         res.status(200).json({
             status: "success",
-            payload: `${matchScore}%`,
+            payload: suggestedKeywords,
         });
         return;
     }
@@ -109,21 +109,14 @@ const suggestResumeImprovements = (req, res, next) => __awaiter(void 0, void 0, 
 exports.suggestResumeImprovements = suggestResumeImprovements;
 const generateCoverLetter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { applicantName } = req.body;
-        if (!applicantName) {
-            res
-                .status(400)
-                .json({ status: "error", message: "Applicant name is required" });
-            return;
-        }
-        const { description } = req.body;
-        if (!description) {
+        const { applicantName, jobDescription, resume } = req.body;
+        if (!jobDescription) {
             res
                 .status(400)
                 .json({ status: "error", message: "Job description is required" });
             return;
         }
-        const payload = yield (0, job_services_1.getCoverLetter)(applicantName, description);
+        const payload = yield (0, job_services_1.getCoverLetter)(applicantName, jobDescription, resume);
         res.status(200).json({ status: "success", payload });
         return;
     }
