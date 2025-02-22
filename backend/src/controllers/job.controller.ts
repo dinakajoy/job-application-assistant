@@ -13,16 +13,15 @@ export const analyzeJobDescription = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { description } = req.body;
-    if (!description) {
+    const { jobDescription } = req.body;
+    if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
       return;
     }
 
-    const payload = await jobDescriptionAnalyzer(description);
-    console.log("=================", payload);
+    const payload = await jobDescriptionAnalyzer(jobDescription);
     res.status(200).json({ status: "success", payload });
     return;
   } catch (error: any) {

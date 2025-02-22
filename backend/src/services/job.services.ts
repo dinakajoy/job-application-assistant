@@ -5,16 +5,37 @@ const apiKey = config.get("environment.apiKey") as string;
 
 const openai = new OpenAI({ apiKey });
 
-export const jobDescriptionAnalyzer = async (description: string) => {
-  const prompt = `Extract key skills and responsibilities from this job description:\n${description}`;
+// export const jobDescriptionAnalyzer = async (jobDescription: string) => {
+//   const prompt = `Extract key skills and responsibilities from this job description:\n${jobDescription}`;
 
-  const response = await openai.completions.create({
+//   const response = await openai.chat.completions.create({
+//     model: "gpt-4",
+//     messages: [{ role: "user", content: prompt }],
+//     max_tokens: 200,
+//   });
+
+//   return response.choices[0].text?.trim() || "";
+// };
+
+export const jobDescriptionAnalyzer = async (jobDescription: string) => {
+  const response = await openai.chat.completions.create({
     model: "gpt-4",
-    prompt,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that extracts key skills and responsibilities from job descriptions.",
+      },
+      {
+        role: "user",
+        content: `Extract key skills and responsibilities from this job description:\n${jobDescription}`,
+      },
+    ],
     max_tokens: 200,
   });
+  console.log("==================== response", response.choices[0]?.message);
 
-  return response.choices[0].text?.trim() || "";
+  return response.choices[0]?.message?.content?.trim() || "";
 };
 
 export const resumeForJobDescriptionAnalyzer = async (
@@ -76,9 +97,9 @@ export const getResumeImprovements = async (
 
 export const getCoverLetter = async (
   applicantName: string,
-  description: string
+  jobDescription: string
 ): Promise<string> => {
-  const prompt = `Generate a professional cover letter for ${applicantName} applying for this job:\n\n"${description}"\n\n The cover letter should be formal and engaging.`;
+  const prompt = `Generate a professional cover letter for ${applicantName} applying for this job:\n\n"${jobDescription}"\n\n The cover letter should be formal and engaging.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4",

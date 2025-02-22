@@ -24,6 +24,7 @@ A web app that helps job seekers **analyze job descriptions** and **tailor their
 
 ## 🛠 Tech Stack:
 
-- **Frontend:** React.js (Simple UI with a form and results display)
-- **Backend:** Express.js (Handles API requests)
+- **Frontend:** Next.js, TypeScript and TailwindCSS
+- **Backend:** Express.js with TypeScript (Handles API requests)
+- **Testing:**  Jest (with Supertest for API testing)
 - **AI API:** OpenAI GPT-4 (Extracts skills & generates suggestions)

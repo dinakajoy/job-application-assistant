@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 
 export const jobDescriptionValidation = () => [
-  body("description")
+  body("jobDescription")
     .not()
     .isEmpty()
     .trim()
@@ -12,7 +12,7 @@ export const jobDescriptionValidation = () => [
 ];
 
 export const resumeAndJobDescriptionValidation = () => [
-  body("description")
+  body("jobDescription")
     .not()
     .isEmpty()
     .trim()
@@ -37,7 +37,7 @@ export const coverLetterValidation = () => [
     .isLength({ min: 3 })
     .escape()
     .withMessage("Applicant name is required"),
-  body("description")
+  body("jobDescription")
     .not()
     .isEmpty()
     .trim()
