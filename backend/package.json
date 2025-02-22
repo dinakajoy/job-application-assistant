@@ -19,7 +19,6 @@
     "url": "https://github.com/dinakajoy/job-application-assistant/issues"
   },
   "homepage": "https://github.com/dinakajoy/job-application-assistant#readme",
-  "packageManager": "pnpm@10.4.1",
   "dependencies": {
     "compression": "^1.8.0",
     "concurrently": "^9.1.2",
