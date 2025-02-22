@@ -20,7 +20,7 @@ const CoverLetterGeneratorPage = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:1337/api/jobs/generate-cover-letter",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/generate-cover-letter`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

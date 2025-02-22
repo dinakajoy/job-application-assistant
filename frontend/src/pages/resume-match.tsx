@@ -44,7 +44,7 @@ const ResumeMatchPage = () => {
       formData.append("jobDescription", jobDescription);
 
       const response = await fetch(
-        "http://localhost:1337/api/jobs/match-resume",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/match-resume`,
         {
           method: "POST",
           body: formData,

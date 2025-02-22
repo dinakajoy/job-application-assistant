@@ -46,7 +46,7 @@ const ResumeImprovementTipsPage = () => {
       formData.append("jobDescription", jobDescription);
 
       const response = await fetch(
-        "http://localhost:1337/api/jobs/resume-improvements",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/resume-improvements`,
         {
           method: "POST",
           body: formData,
