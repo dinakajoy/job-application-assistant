@@ -1,13 +1,29 @@
 import Link from "next/link";
 import { useState } from "react";
+import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
+import { useJobContext } from "@/context/JobContext";
 
 const CoverLetterGeneratorPage = () => {
+  const { jobDescription, setJobDescription, resume, setResume } =
+    useJobContext();
   const [applicantName, setApplicantName] = useState("");
-  const [resume, setResume] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Invalid file type. Please upload a PDF document.");
+      setResume(null);
+      return;
+    }
+    setError(null);
+    setResume(file);
+  };
 
   const handleGenerateCoverLetter = async () => {
     if (!jobDescription.trim()) {
@@ -56,15 +72,26 @@ const CoverLetterGeneratorPage = () => {
           value={applicantName}
           onChange={(e) => setApplicantName(e.target.value)}
         />
-        <p className="mb-2 text-xs text-red-500">Optional</p>
-        <textarea
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
-          rows={4}
-          placeholder="(Optional) Paste your resume here..."
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-        ></textarea>
-        <p className="mb-2 text-xs text-red-500">
+        <p className="mb-2 text-xs text-red-400">Optional</p>
+        <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-2 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
+          <label htmlFor="resume-upload" className="cursor-pointer">
+            <ArrowUpTrayIcon className="w-5 h-5 mx-auto text-blue-500" />
+            <p className="text-sm text-gray-600">
+              Click to upload your resume (PDF)
+            </p>
+            <input
+              id="resume-upload"
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
+        </div>
+        {resume && (
+          <p className="mt-2 text-sm text-gray-600">Uploaded: {resume.name}</p>
+        )}
+        <p className="mb-2 text-xs text-red-400">
           Optional - However, including a resume allows the AI to tailor the
           cover letter more specifically to the applicant’s skills and
           experience, making it stronger.
@@ -84,7 +111,7 @@ const CoverLetterGeneratorPage = () => {
         )}
 
         <button
-          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed"
           onClick={handleGenerateCoverLetter}
           disabled={loading}
         >

@@ -109,13 +109,22 @@ const suggestResumeImprovements = (req, res) => __awaiter(void 0, void 0, void 0
 exports.suggestResumeImprovements = suggestResumeImprovements;
 const generateCoverLetter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { applicantName, jobDescription, resume } = req.body;
+        const { applicantName, jobDescription } = req.body;
         if (!jobDescription) {
             res
                 .status(400)
                 .json({ status: "error", message: "Job description is required" });
             return;
         }
+        const resumeFile = req.file;
+        if (!resumeFile) {
+            res
+                .status(400)
+                .json({ status: "error", message: "Resume file is required" });
+            return;
+        }
+        const pdfText = yield (0, pdf_parse_1.default)(resumeFile.buffer);
+        const resume = pdfText.text;
         const payload = yield (0, job_services_1.getCoverLetter)(applicantName, jobDescription, resume);
         res.status(200).json({ status: "success", payload });
         return;

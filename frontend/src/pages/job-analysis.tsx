@@ -1,16 +1,23 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import { useJobContext } from "@/context/JobContext";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { IResponse } from "@/types/types";
 
 const JobAnalysisPage = () => {
-  const [jobDescription, setJobDescription] = useState("");
+  const { jobDescription, setJobDescription } = useJobContext();
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
+    if (!jobDescription.trim()) {
+      setError("Please add job description");
+      return;
+    }
+    setError(null);
     setLoading(true);
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/analyze`,
@@ -38,13 +45,14 @@ const JobAnalysisPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-60">
+      <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md  text-gray-60">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           Job Description Analysis
         </h1>
         <textarea
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
+          required
           rows={10}
           placeholder="Paste job description here..."
           value={jobDescription}
@@ -56,7 +64,7 @@ const JobAnalysisPage = () => {
           </div>
         )}
         <button
-          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed"
           onClick={handleAnalyze}
           disabled={loading}
         >
@@ -71,6 +79,12 @@ const JobAnalysisPage = () => {
             <MarkdownRenderer content={analysisResult} />
           </div>
         )}
+
+        <div className="w-full mt-4 flex flex-col md:flex-row items-center gap-2 text-sm text-blue-600 justify-center">
+          <Link href="/resume-match" className="hover:underline">
+            → Match Resume
+          </Link>
+        </div>
 
         {/* Home Page Link */}
         <div className="mt-6 text-center">

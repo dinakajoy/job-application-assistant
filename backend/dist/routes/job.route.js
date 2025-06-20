@@ -11,5 +11,5 @@ const router = (0, express_1.Router)();
 router.post("/analyze", (0, job_validation_1.jobDescriptionValidation)(), job_validation_1.validate, job_controller_1.analyzeJobDescription);
 router.post("/match-resume", upload_1.default.single("resume"), (0, job_validation_1.resumeAndJobDescriptionValidation)(), job_validation_1.validate, job_controller_1.analyzeResumeForJob);
 router.post("/resume-improvements", upload_1.default.single("resume"), (0, job_validation_1.resumeAndJobDescriptionValidation)(), job_validation_1.validate, job_controller_1.suggestResumeImprovements);
-router.post("/generate-cover-letter", (0, job_validation_1.coverLetterValidation)(), job_validation_1.validate, job_controller_1.generateCoverLetter);
+router.post("/generate-cover-letter", upload_1.default.single("resume"), (0, job_validation_1.resumeAndJobDescriptionValidation)(), job_validation_1.validate, job_controller_1.generateCoverLetter);
 exports.default = router;

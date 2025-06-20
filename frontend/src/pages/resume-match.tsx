@@ -2,10 +2,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import { IResponse } from "@/types/types";
+import { useJobContext } from "@/context/JobContext";
 
 const ResumeMatchPage = () => {
-  const [jobDescription, setJobDescription] = useState("");
-  const [resume, setResume] = useState<File | null>(null);
+  const { jobDescription, setJobDescription, resume, setResume } =
+    useJobContext();
   const [matchScore, setMatchScore] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,9 +84,9 @@ const ResumeMatchPage = () => {
           onChange={(e) => setJobDescription(e.target.value)}
         ></textarea>
 
-        <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
+        <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-2 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
           <label htmlFor="resume-upload" className="cursor-pointer">
-            <ArrowUpTrayIcon className="w-10 h-10 mx-auto text-blue-500" />
+            <ArrowUpTrayIcon className="w-5 h-5 mx-auto text-blue-500" />
             <p className="text-sm text-gray-600">
               Click to upload your resume (PDF)
             </p>
@@ -109,7 +110,7 @@ const ResumeMatchPage = () => {
         )}
 
         <button
-          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed"
           onClick={handleMatchResume}
           disabled={loading}
         >
@@ -128,6 +129,12 @@ const ResumeMatchPage = () => {
               <p className="text-2xl font-bold">{matchScore}%</p>
             </div>
           ))}
+
+        <div className="w-full mt-4 flex flex-col md:flex-row items-center gap-2 text-sm text-blue-600 justify-center">
+          <Link href="/improvement-tips" className="hover:underline">
+            → Resume Improvement Tips
+          </Link>
+        </div>
 
         {/* Home Page Link */}
         <div className="mt-6 text-center">

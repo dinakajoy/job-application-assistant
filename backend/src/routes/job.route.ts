@@ -40,7 +40,8 @@ router.post(
 
 router.post(
   "/generate-cover-letter",
-  coverLetterValidation(),
+  upload.single("resume"),
+  resumeAndJobDescriptionValidation(),
   validate,
   generateCoverLetter
 );

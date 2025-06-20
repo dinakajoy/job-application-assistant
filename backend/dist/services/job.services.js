@@ -20,36 +20,49 @@ const openai = new openai_1.default({ apiKey });
 const jobDescriptionAnalyzer = (jobDescription) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     const response = yield openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         messages: [
             {
                 role: "system",
-                content: "You are an AI assistant that extracts key skills and responsibilities from job descriptions.",
+                content: "You are an AI job coach. Extract the key skills, responsibilities, and required experience from the following job description.",
             },
             {
                 role: "user",
-                content: `Extract key skills and responsibilities from this job description:\n${jobDescription}`,
+                content: jobDescription,
             },
         ],
-        max_tokens: 200,
     });
     return ((_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim()) || "";
 });
 exports.jobDescriptionAnalyzer = jobDescriptionAnalyzer;
 const resumeForJobDescriptionAnalyzer = (jobDescription, resumeText) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4-turbo",
         messages: [
             {
                 role: "system",
-                content: "You are an AI assistant that compares a resume against a job description and provides a match percentage based on skill relevance.",
+                content: "You are a career assistant helping job seekers evaluate their fit for job postings based on their resumes. Think step-by-step before giving your final judgment.",
             },
             {
                 role: "user",
-                content: `Compare this resume to the job description and return a match percentage from 0% to 100% based on skills and experience relevance.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in the format: {"matchPercentage": number}`,
+                content: `
+    Here is a job description:
+    
+    ${jobDescription}
+    
+    And here is the resume:
+    
+    ${resumeText}
+    
+    Please:
+    1. Extract the key required skills and qualifications from the job description.
+    2. Extract the candidate's skills, qualifications, and experiences from the resume.
+    3. Compare both sets and reason about matches and gaps.
+    4. Determine how well the candidate fits this job and why.
+    5. Suggest 2–3 improvements to the resume to increase alignment.
+    `,
             },
         ],
-        max_tokens: 100,
     });
     const matchData = JSON.parse(response.choices[0].message.content || "");
     return matchData.matchPercentage || 0;
@@ -58,38 +71,57 @@ exports.resumeForJobDescriptionAnalyzer = resumeForJobDescriptionAnalyzer;
 const getResumeImprovements = (jobDescription, resumeText) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     const response = yield openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4-turbo",
         messages: [
             {
                 role: "system",
-                content: "You are an AI assistant that suggests missing keywords in a resume based on a given job description to improve its relevance.",
+                content: "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume. Think step by step, and return specific, actionable improvement suggestions in JSON format."
             },
             {
                 role: "user",
-                content: `Analyze the following resume and job description. Suggest missing keywords or phrases that the resume should include to better match the job description.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in JSON format: { "suggestedKeywords": ["keyword1", "keyword2", ...] }`,
+                content: `
+        Here is the job description:
+        
+        ${jobDescription}
+        
+        Here is the user's resume:
+        
+        ${resumeText}
+        
+        Step by step:
+        1. Identify important skills, tools, or experiences required by the job.
+        2. Review the resume and note missing or under-emphasized items.
+        3. Suggest 3–5 specific changes or additions to improve alignment with the job.
+        4. Provide your suggestions clearly with explanations.
+        
+        Return your response in the following JSON format:
+        
+        "improvements\": [\n    {\n      \"missing\": \"Name of missing skill/requirement\",\n      \"suggestion\": \"How to add or emphasize it in the resume\",\n      \"section\": \"Recommended resume section (e.g. Experience, Skills,  Projects)\"\n    },\n    ...\n  ]\n}"
+        
+        Do not rewrite the resume, just provide actionable improvement hints.
+        `,
             },
         ],
-        max_tokens: 150,
     });
     const result = JSON.parse(((_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim()) || "");
-    return result.suggestedKeywords || [];
+    return result.improvements || [];
 });
 exports.getResumeImprovements = getResumeImprovements;
 const getCoverLetter = (applicantName, jobDescription, resume) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     let userPrompt = `Write a professional cover letter for the following job description:\n${jobDescription}`;
     if (applicantName) {
-        userPrompt = `The applicant's name is ${applicantName}.\n` + userPrompt;
+        userPrompt += `The applicant's name is ${applicantName}.\n` + userPrompt;
     }
     if (resume) {
         userPrompt += `\nHere is the applicant's resume:\n${resume}`;
     }
     const response = yield openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4-turbo",
         messages: [
             {
                 role: "system",
-                content: "You are an AI assistant that generates tailored cover letters based on job descriptions.",
+                content: "You are a professional career assistant that writes tailored, impactful cover letters based on (optional a user's resume and) a job description.",
             },
             {
                 role: "user",

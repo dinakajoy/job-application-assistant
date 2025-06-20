@@ -127,13 +127,25 @@ export const generateCoverLetter = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { applicantName, jobDescription, resume } = req.body;
+    const { applicantName, jobDescription } = req.body;
     if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
       return;
     }
+
+    const resumeFile = req.file;
+    if (!resumeFile) {
+      res
+        .status(400)
+        .json({ status: "error", message: "Resume file is required" });
+      return;
+    }
+
+    // Extract text from the uploaded PDF
+    const pdfText = await pdf(resumeFile.buffer);
+    const resume = pdfText.text;
 
     const payload = await getCoverLetter(applicantName, jobDescription, resume);
     res.status(200).json({ status: "success", payload });

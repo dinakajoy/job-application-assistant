@@ -1,14 +1,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
-import { ISugestionResponse } from "@/types/types";
+import { ISugestion, ISugestionResponse } from "@/types/types";
+import { useJobContext } from "@/context/JobContext";
 
 const ResumeImprovementTipsPage = () => {
-  const [jobDescription, setJobDescription] = useState("");
-  const [resume, setResume] = useState<File | null>(null);
-  const [suggestedKeywords, setSuggestedKeywords] = useState<string[] | null>(
-    null
-  );
+  const { jobDescription, setJobDescription, resume, setResume } =
+    useJobContext();
+  const [suggestedImprovements, setSuggestedImprovements] = useState<
+    ISugestion[] | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,17 +29,17 @@ const ResumeImprovementTipsPage = () => {
 
   const handleMatchResume = async () => {
     if (!jobDescription.trim()) {
-      setSuggestedKeywords(null);
+      setSuggestedImprovements(null);
       setError("Please enter a job description.");
       return;
     }
     if (!resume) {
-      setSuggestedKeywords(null);
+      setSuggestedImprovements(null);
       setError("Please upload your resume.");
       return;
     }
     setError(null);
-    setSuggestedKeywords(null);
+    setSuggestedImprovements(null);
     setLoading(true);
     try {
       const formData = new FormData();
@@ -54,12 +55,12 @@ const ResumeImprovementTipsPage = () => {
       );
       const data: ISugestionResponse = await response.json();
       if (data.status === "error") {
-        setSuggestedKeywords(null);
+        setSuggestedImprovements(null);
         setError(data.message || "There was an error! Try again");
       } else {
         if (data.payload) {
           setError(null);
-          setSuggestedKeywords(data.payload);
+          setSuggestedImprovements(data.payload);
         }
       }
     } catch (error) {
@@ -82,9 +83,9 @@ const ResumeImprovementTipsPage = () => {
           onChange={(e) => setJobDescription(e.target.value)}
         ></textarea>
 
-        <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
+        <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-2 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
           <label htmlFor="resume-upload" className="cursor-pointer">
-            <ArrowUpTrayIcon className="w-10 h-10 mx-auto text-blue-500" />
+            <ArrowUpTrayIcon className="w-5 h-5 mx-auto text-blue-500" />
             <p className="text-sm text-gray-600">
               Click to upload your resume (PDF)
             </p>
@@ -108,27 +109,44 @@ const ResumeImprovementTipsPage = () => {
         )}
 
         <button
-          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700  disabled:cursor-not-allowed"
           onClick={handleMatchResume}
           disabled={loading}
         >
           {loading ? "Analyzing..." : "Suggest Keywords"}
         </button>
 
-        {suggestedKeywords && suggestedKeywords.length > 0 && (
+        {suggestedImprovements && suggestedImprovements.length > 0 && (
           <div className="mt-6 p-4 bg-gray-100 rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900">
-              Suggested Keywords:
+              Suggested Improvements:
             </h2>
             <ul className="list-disc list-inside mt-2">
-              {suggestedKeywords.map((keyword, index) => (
-                <li key={index} className="text-gray-700">
-                  {keyword}
+              {suggestedImprovements.map((suggestedImprovement, index) => (
+                <li key={index} className="text-gray-700 bg-gray-100 border-1">
+                  <p className="my-1">
+                    <span className="font-semibold mr-1">Missing</span>:
+                    {suggestedImprovement.missing}
+                  </p>
+                  <p>
+                    <span className="font-semibold mr-1">Suggestion</span>:
+                    {suggestedImprovement.suggestion}
+                  </p>
+                  <p>
+                    <span className="font-semibold mr-1">Section</span>:
+                    {suggestedImprovement.section}
+                  </p>
                 </li>
               ))}
             </ul>
           </div>
         )}
+
+        <div className="w-full mt-4 flex flex-col md:flex-row items-center gap-2 text-sm text-blue-600 justify-center">
+          <Link href="/cover-letter" className="hover:underline">
+            → Generate Cover Letter
+          </Link>
+        </div>
 
         {/* Home Page Link */}
         <div className="mt-6 text-center">
