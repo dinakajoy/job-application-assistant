@@ -73,7 +73,7 @@ const ResumeImprovementTipsPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
       <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Resume Keyword Suggestion
+          Resume Improvement Suggestion
         </h1>
         <textarea
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
@@ -113,27 +113,27 @@ const ResumeImprovementTipsPage = () => {
           onClick={handleMatchResume}
           disabled={loading}
         >
-          {loading ? "Analyzing..." : "Suggest Keywords"}
+          {loading ? "Analyzing..." : "Suggest Improvements"}
         </button>
 
         {suggestedImprovements && suggestedImprovements.length > 0 && (
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+          <div className="mt-6 rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900">
               Suggested Improvements:
             </h2>
             <ul className="list-disc list-inside mt-2">
               {suggestedImprovements.map((suggestedImprovement, index) => (
-                <li key={index} className="text-gray-700 bg-gray-100 border-1">
+                <li key={index} className="text-gray-700 border-1 list-none my-2 bg-gray-100 rounded-lg p-2 shadow-sm">
                   <p className="my-1">
-                    <span className="font-semibold mr-1">Missing</span>:
+                    <span className="font-semibold mr-1">Missing: </span>
                     {suggestedImprovement.missing}
                   </p>
                   <p>
-                    <span className="font-semibold mr-1">Suggestion</span>:
+                    <span className="font-semibold mr-1">Suggestion:</span>
                     {suggestedImprovement.suggestion}
                   </p>
                   <p>
-                    <span className="font-semibold mr-1">Section</span>:
+                    <span className="font-semibold mr-1">Section:</span>
                     {suggestedImprovement.section}
                   </p>
                 </li>

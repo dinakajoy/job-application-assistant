@@ -25,39 +25,25 @@ export const jobDescriptionAnalyzer = async (jobDescription: string) => {
   return response.choices[0]?.message?.content?.trim() || "";
 };
 
-// Using Chain-of-Thought prompting => Instruction-Tuned + Reasoning
+// Using prompting => Instruction-Tuned
 export const resumeForJobDescriptionAnalyzer = async (
   jobDescription: string,
   resumeText: string
 ): Promise<number> => {
   const response = await openai.chat.completions.create({
-    model: "gpt-4-turbo",
+    model: "gpt-4",
     messages: [
       {
         role: "system",
         content:
-          "You are a career assistant helping job seekers evaluate their fit for job postings based on their resumes. Think step-by-step before giving your final judgment.",
+          "You are an AI assistant that compares a resume against a job description and provides a match percentage based on skill relevance.",
       },
       {
         role: "user",
-        content: `
-    Here is a job description:
-    
-    ${jobDescription}
-    
-    And here is the resume:
-    
-    ${resumeText}
-    
-    Please:
-    1. Extract the key required skills and qualifications from the job description.
-    2. Extract the candidate's skills, qualifications, and experiences from the resume.
-    3. Compare both sets and reason about matches and gaps.
-    4. Determine how well the candidate fits this job and why.
-    5. Suggest 2–3 improvements to the resume to increase alignment.
-    `,
+        content: `Compare this resume to the job description and return a match percentage from 0% to 100% based on skills and experience relevance.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in the format: {"matchPercentage": number}`,
       },
     ],
+    max_tokens: 100,
   });
 
   const matchData = JSON.parse(response.choices[0].message.content || "");
@@ -75,7 +61,8 @@ export const getResumeImprovements = async (
     messages: [
       {
         role: "system",
-        content: "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume. Think step by step, and return specific, actionable improvement suggestions in JSON format."
+        content:
+          "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume. Think step by step, and return specific, actionable improvement suggestions in JSON format.",
       },
       {
         role: "user",
@@ -110,20 +97,29 @@ export const getResumeImprovements = async (
   return result.improvements || [];
 };
 
+// Using Chain-of-Thought prompting => Instruction-Tuned + Reasoning
 export const getCoverLetter = async (
   applicantName: string,
   jobDescription: string,
   resume: string
 ): Promise<string> => {
-  let userPrompt = `Write a professional cover letter for the following job description:\n${jobDescription}`;
+  const userPrompt = `
+    ${applicantName ? `The applicant's name is ${applicantName.trim()}.` : ""}
+    Here is the job description:
+    ${jobDescription}
 
-  if (applicantName) {
-    userPrompt += `The applicant's name is ${applicantName}.\n` + userPrompt;
-  }
+    Here is the applicant's resume:
+    ${resume}
 
-  if (resume) {
-    userPrompt += `\nHere is the applicant's resume:\n${resume}`;
-  }
+    Please generate a professional, personalized cover letter tailored to this job. 
+    Follow this format:
+    1. Brief introduction and expression of interest
+    2. Paragraph summarizing relevant experience and skills
+    3. Paragraph showing alignment with the job description
+    4. Closing with enthusiasm and invitation to connect
+
+    Do not include markdown or formatting instructions. Just return the plain cover letter.
+    `;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4-turbo",
@@ -131,19 +127,18 @@ export const getCoverLetter = async (
       {
         role: "system",
         content:
-          "You are a professional career assistant that writes tailored, impactful cover letters based on (optional a user's resume and) a job description.",
+          "You are a senior career coach and professional writer. You craft personalized, persuasive cover letters that align a candidate’s experience and skills with the job description. Follow modern formatting and tone, and highlight key qualifications naturally.",
       },
       {
         role: "user",
         content: userPrompt,
       },
     ],
-    max_tokens: 300,
+    max_tokens: 600,
   });
 
-  const coverLetter =
+  return (
     response.choices[0]?.message?.content?.trim() ||
-    "Failed to generate cover letter.";
-
-  return coverLetter;
+    "Failed to generate cover letter."
+  );
 };

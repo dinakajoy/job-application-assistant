@@ -31,16 +31,25 @@ const CoverLetterGeneratorPage = () => {
       setError("Please enter a job description.");
       return;
     }
+    if (!resume) {
+      setCoverLetter(null);
+      setError("Please upload your resume.");
+      return;
+    }
     setError(null);
     setCoverLetter(null);
     setLoading(true);
     try {
+      const formData = new FormData();
+      formData.append("resume", resume);
+      formData.append("jobDescription", jobDescription);
+      formData.append("applicantName", applicantName);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/generate-cover-letter`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ applicantName, resume, jobDescription }),
+          body: formData,
         }
       );
       const data = await response.json();
