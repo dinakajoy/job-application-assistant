@@ -3,9 +3,10 @@
 A web app that helps job seekers **analyze job descriptions** and **tailor their resumes** using AI.
 
 > This app is optimized to work with instruction-tuned LLMs (GPT-4-turbo) using:
+
 - Prompting for content generation (e.g., cover letters)
 - Chain-of-Thought prompting for reasoning-based tasks (e.g., resume vs job alignment)
-Together, these approaches enable accurate, structured, and intelligent AI-assisted job application support.
+  Together, these approaches enable accurate, structured, and intelligent AI-assisted job application support.
 
 ## Features
 

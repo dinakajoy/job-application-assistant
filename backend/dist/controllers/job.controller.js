@@ -56,10 +56,10 @@ const analyzeResumeForJob = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         const pdfText = yield (0, pdf_parse_1.default)(resumeFile.buffer);
         const resumeText = pdfText.text;
-        const matchScore = yield (0, job_services_1.resumeForJobDescriptionAnalyzer)(jobDescription, resumeText);
+        const result = yield (0, job_services_1.resumeForJobDescriptionAnalyzer)(jobDescription, resumeText);
         res.status(200).json({
             status: "success",
-            payload: `${matchScore}`,
+            payload: Object.assign({}, result),
         });
         return;
     }

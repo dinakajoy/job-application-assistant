@@ -1,13 +1,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
-import { IResponse } from "@/types/types";
+import { IResumeMatch, IResumeMatchResponse } from "@/types/types";
 import { useJobContext } from "@/context/JobContext";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 const ResumeMatchPage = () => {
   const { jobDescription, setJobDescription, resume, setResume } =
     useJobContext();
-  const [matchScore, setMatchScore] = useState<string | null>(null);
+  const [matchResult, setMatchResult] = useState<IResumeMatch | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -26,18 +27,16 @@ const ResumeMatchPage = () => {
   };
 
   const handleMatchResume = async () => {
+    setMatchResult(null);
     if (!jobDescription.trim()) {
-      setMatchScore(null);
       setError("Please enter a job description.");
       return;
     }
     if (!resume) {
-      setMatchScore(null);
       setError("Please upload your resume.");
       return;
     }
     setError(null);
-    setMatchScore(null);
     setLoading(true);
     try {
       const formData = new FormData();
@@ -51,21 +50,21 @@ const ResumeMatchPage = () => {
           body: formData,
         }
       );
-      const data: IResponse = await response.json();
+      const data: IResumeMatchResponse = await response.json();
       if (data.status === "error") {
-        setMatchScore(null);
+        setMatchResult(null);
         setError(data.message || "There was an error! Try again");
       } else {
         if (data.payload) {
           setError(null);
-          setMatchScore(data.payload);
+          setMatchResult(data.payload);
         }
         if (!data.payload && data.message) {
-          setMatchScore(data.message);
+          setError(data.message);
         }
       }
     } catch (error) {
-      console.error("Error analyzing job description", error);
+      setError("Error analyzing job description");
     }
     setLoading(false);
   };
@@ -117,16 +116,26 @@ const ResumeMatchPage = () => {
           {loading ? "Matching..." : "Get Match Score"}
         </button>
 
-        {matchScore !== null &&
-          (Number(matchScore) < 50 ? (
-            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
-              <h3 className="text-xl font-semibold">Resume Match Score</h3>
-              <p className="text-2xl font-bold">{matchScore}%</p>
-            </div>
+        {matchResult !== null &&
+          (Number(matchResult.score) < 50 ? (
+            <>
+              <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
+                <h3 className="text-xl font-semibold mt-2">
+                  Resume Match Score
+                </h3>
+                <p className="text-2xl font-bold">{matchResult.score}%</p>
+              </div>
+              <div className="prose max-w-none mt-4 text-sm">
+                <MarkdownRenderer content={matchResult.explanation} />
+              </div>
+            </>
           ) : (
             <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-lg text-center">
               <h3 className="text-xl font-semibold">Resume Match Score</h3>
-              <p className="text-2xl font-bold">{matchScore}%</p>
+              <p className="text-2xl font-bold">{matchResult.score}%</p>
+              <div className="prose max-w-none mt-4 text-sm">
+                <MarkdownRenderer content={matchResult.explanation} />
+              </div>
             </div>
           ))}
 

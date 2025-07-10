@@ -63,7 +63,7 @@ const CoverLetterGeneratorPage = () => {
         }
       }
     } catch (error) {
-      console.error("Error generating cover letter:", error);
+      setError("Error generating cover letter");
     }
     setLoading(false);
   };
@@ -128,7 +128,6 @@ const CoverLetterGeneratorPage = () => {
         </button>
         {coverLetter && (
           <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-            <h2 className="text-xl font-semibold">Generated Cover Letter:</h2>
             <p className="mt-2 text-gray-700 whitespace-pre-line">
               {coverLetter}
             </p>

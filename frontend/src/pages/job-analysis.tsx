@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useJobContext } from "@/context/JobContext";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
-import { IResponse } from "@/types/types";
+import { IJobAnalysis, IJobAnalysisResponse } from "@/types/types";
+import JobInsights from "@/components/JobInsights";
 
 const JobAnalysisPage = () => {
   const { jobDescription, setJobDescription } = useJobContext();
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<IJobAnalysis | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +29,7 @@ const JobAnalysisPage = () => {
           body: JSON.stringify({ jobDescription }),
         }
       );
-      const data: IResponse = await response.json();
+      const data: IJobAnalysisResponse = await response.json();
       if (data.status === "error") {
         setError(data.message || "There was an error! Try again");
       } else {
@@ -35,11 +37,11 @@ const JobAnalysisPage = () => {
           setAnalysisResult(data.payload);
         }
         if (!data.payload && data.message) {
-          setAnalysisResult(data.message);
+          setError(data.message);
         }
       }
     } catch (error) {
-      console.error("Error analyzing job description", error);
+      setError("Error analyzing job description");
     }
     setLoading(false);
   };
@@ -73,10 +75,10 @@ const JobAnalysisPage = () => {
 
         {analysisResult && (
           <div className="mt-6 p-4 bg-gray-100 rounded-lg text-gray-800">
-            <h2 className="text-2xl font-semibold text-center">
-              Key Data Extracted
-            </h2>
-            <MarkdownRenderer content={analysisResult} />
+            <h1 className="text-3xl font-bold mb-6">
+              Job Description Insights
+            </h1>
+            <JobInsights {...analysisResult} />
           </div>
         )}
 

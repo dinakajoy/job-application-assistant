@@ -1,15 +1,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
-import { ISugestion, ISugestionResponse } from "@/types/types";
+import { IResumeTips, IResumeTipsResponse } from "@/types/types";
 import { useJobContext } from "@/context/JobContext";
+import ResumeInsights from "@/components/ResumeInsights";
 
 const ResumeImprovementTipsPage = () => {
   const { jobDescription, setJobDescription, resume, setResume } =
     useJobContext();
-  const [suggestedImprovements, setSuggestedImprovements] = useState<
-    ISugestion[] | null
-  >(null);
+  const [suggestedImprovements, setSuggestedImprovements] =
+    useState<IResumeTips | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,7 @@ const ResumeImprovementTipsPage = () => {
           body: formData,
         }
       );
-      const data: ISugestionResponse = await response.json();
+      const data: IResumeTipsResponse = await response.json();
       if (data.status === "error") {
         setSuggestedImprovements(null);
         setError(data.message || "There was an error! Try again");
@@ -64,7 +64,7 @@ const ResumeImprovementTipsPage = () => {
         }
       }
     } catch (error) {
-      console.error("Error analyzing job description", error);
+      setError("Error analyzing job description");
     }
     setLoading(false);
   };
@@ -116,29 +116,12 @@ const ResumeImprovementTipsPage = () => {
           {loading ? "Analyzing..." : "Suggest Improvements"}
         </button>
 
-        {suggestedImprovements && suggestedImprovements.length > 0 && (
+        {suggestedImprovements && (
           <div className="mt-6 rounded-lg">
             <h2 className="text-xl font-semibold text-gray-900">
               Suggested Improvements:
             </h2>
-            <ul className="list-disc list-inside mt-2">
-              {suggestedImprovements.map((suggestedImprovement, index) => (
-                <li key={index} className="text-gray-700 border-1 list-none my-2 bg-gray-100 rounded-lg p-2 shadow-sm">
-                  <p className="my-1">
-                    <span className="font-semibold mr-1">Missing: </span>
-                    {suggestedImprovement.missing}
-                  </p>
-                  <p>
-                    <span className="font-semibold mr-1">Suggestion:</span>
-                    {suggestedImprovement.suggestion}
-                  </p>
-                  <p>
-                    <span className="font-semibold mr-1">Section:</span>
-                    {suggestedImprovement.section}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <ResumeInsights {...suggestedImprovements} />
           </div>
         )}
 

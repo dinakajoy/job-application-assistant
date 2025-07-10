@@ -5,99 +5,194 @@ const apiKey = config.get("environment.apiKey") as string;
 
 const openai = new OpenAI({ apiKey });
 
-// Using prompting => Instruction-Tuned
+async function getEmbedding(text: string) {
+  const response = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: text,
+  });
+  return response.data[0].embedding;
+}
+
+function cosineSimilarity(vecA: number[], vecB: number[]) {
+  const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+  const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+  const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+  return dotProduct / (magnitudeA * magnitudeB);
+}
+
+// Function Calling with LLM - OpenAI, JSON schema
 export const jobDescriptionAnalyzer = async (jobDescription: string) => {
+  const tools = {
+    name: "extract_job_insights",
+    description:
+      "Extracts the key skills, responsibilities, and experience from a job description.",
+    parameters: {
+      type: "object",
+      properties: {
+        skills: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of key skills required for the job",
+        },
+        responsibilities: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of responsibilities for the job",
+        },
+        experience: {
+          type: "array",
+          items: { type: "string" },
+          description: "Experience or qualifications required for the job",
+        },
+      },
+      required: ["skills", "responsibilities", "experience"],
+      additionalProperties: false,
+    },
+    strict: true,
+  };
+
   const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
+    model: "gpt-4.1",
     messages: [
       {
         role: "system",
-        content:
-          "You are an AI job coach. Extract the key skills, responsibilities, and required experience from the following job description.",
+        content: "You are an AI job coach.",
       },
       {
         role: "user",
-        content: jobDescription,
+        content: `Extract the key skills, responsibilities, and required experience from the following job description:\n\n${jobDescription}`,
       },
     ],
+    tools: [
+      {
+        type: "function",
+        function: tools,
+      },
+    ],
+    store: true,
   });
 
-  return response.choices[0]?.message?.content?.trim() || "";
+  const functionArgs =
+    response.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
+    "{}";
+
+  return JSON.parse(functionArgs) || {};
 };
 
-// Using prompting => Instruction-Tuned
+// Embedding similarity + LLM natural explanation - OpenAI, calculations
 export const resumeForJobDescriptionAnalyzer = async (
   jobDescription: string,
   resumeText: string
-): Promise<number> => {
+) => {
+  const [resumeEmbedding, jobEmbedding] = await Promise.all([
+    getEmbedding(resumeText),
+    getEmbedding(jobDescription),
+  ]);
+
+  const score = cosineSimilarity(resumeEmbedding, jobEmbedding);
+
+  let explanation = "";
+  let prompt;
+  if (score >= 0.7) {
+    prompt = `Does the following resume match the job description? Highlight why or why not.`;
+  } else {
+    prompt = `Why is the following resume not a good match for the job description? Be specific and suggest improvements.`;
+  }
+
   const response = await openai.chat.completions.create({
     model: "gpt-4",
     messages: [
       {
         role: "system",
         content:
-          "You are an AI assistant that compares a resume against a job description and provides a match percentage based on skill relevance.",
+          "You are an expert recruiter that compares a resume against a job description based on skill relevance.",
       },
       {
         role: "user",
-        content: `Compare this resume to the job description and return a match percentage from 0% to 100% based on skills and experience relevance.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in the format: {"matchPercentage": number}`,
+        content: `${prompt}\n\nJob Description:\n${jobDescription}\n\nResume:\n${resumeText}`,
       },
     ],
-    max_tokens: 100,
   });
+  explanation = response.choices[0].message.content || "";
 
-  const matchData = JSON.parse(response.choices[0].message.content || "");
-
-  return matchData.matchPercentage || 0;
+  return { score: Number((score * 100).toFixed(2)), explanation };
 };
 
-// Suggest Improvements Based on mismatch/gaps => Reasoning => GPT output + hints
+// Function Calling with LLM feedback - OpenAI, structured prompt
 export const getResumeImprovements = async (
   jobDescription: string,
   resumeText: string
 ): Promise<string> => {
+  const functionSchema = {
+    name: "suggest_resume_improvements",
+    description: "Suggest improvements to a resume for a given job description",
+    parameters: {
+      type: "object",
+      properties: {
+        missing_skills: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "List of important skills missing in the resume based on the job description",
+        },
+        formatting_tips: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Suggestions to improve readability, structure, or style of the resume",
+        },
+        keyword_optimization: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Recommendations to align resume keywords with the job description",
+        },
+      },
+      required: ["missing_skills", "formatting_tips", "keyword_optimization"],
+      additionalProperties: false,
+    },
+    strict: true,
+  };
+
   const response = await openai.chat.completions.create({
-    model: "gpt-4-turbo",
+    model: "gpt-4.1",
     messages: [
       {
         role: "system",
         content:
-          "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume. Think step by step, and return specific, actionable improvement suggestions in JSON format.",
+          "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume.",
       },
       {
         role: "user",
-        content: `
-        Here is the job description:
-        
+        content: `Given the following job description and resume, suggest improvements in terms of missing skills, formatting, and keyword relevance.
+  
+        Job Description:
         ${jobDescription}
         
-        Here is the user's resume:
-        
+        Resume:
         ${resumeText}
-        
-        Step by step:
-        1. Identify important skills, tools, or experiences required by the job.
-        2. Review the resume and note missing or under-emphasized items.
-        3. Suggest 3–5 specific changes or additions to improve alignment with the job.
-        4. Provide your suggestions clearly with explanations.
-        
-        Return your response in the following JSON format:
-        
-        "improvements\": [\n    {\n      \"missing\": \"Name of missing skill/requirement\",\n      \"suggestion\": \"How to add or emphasize it in the resume\",\n      \"section\": \"Recommended resume section (e.g. Experience, Skills,  Projects)\"\n    },\n    ...\n  ]\n}"
-        
+
         Do not rewrite the resume, just provide actionable improvement hints.
         `,
       },
     ],
+    tools: [
+      {
+        type: "function",
+        function: functionSchema,
+      },
+    ],
+    store: true,
   });
-  const result = JSON.parse(
-    response.choices[0]?.message?.content?.trim() || ""
-  );
 
-  return result.improvements || [];
+  const functionArgs =
+    response.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
+    "{}";
+
+  return JSON.parse(functionArgs) || {};
 };
 
-// Using Chain-of-Thought prompting => Instruction-Tuned + Reasoning
+// Prompting via template with resume and job description - OpenAI, prompt templates
 export const getCoverLetter = async (
   applicantName: string,
   jobDescription: string,
@@ -118,7 +213,8 @@ export const getCoverLetter = async (
     3. Paragraph showing alignment with the job description
     4. Closing with enthusiasm and invitation to connect
 
-    Do not include markdown or formatting instructions. Just return the plain cover letter.
+    Do not include markdown or formatting instructions. Just return the plain cover letter with no address, just salutation.
+    Each paragraph should not be more than 3 sentences.
     `;
 
   const response = await openai.chat.completions.create({
@@ -135,6 +231,7 @@ export const getCoverLetter = async (
       },
     ],
     max_tokens: 600,
+    temperature: 0.5,
   });
 
   return (

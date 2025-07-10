@@ -57,14 +57,14 @@ export const analyzeResumeForJob = async (
     // Extract text from the uploaded PDF
     const pdfText = await pdf(resumeFile.buffer);
     const resumeText = pdfText.text;
-    const matchScore = await resumeForJobDescriptionAnalyzer(
+    const result = await resumeForJobDescriptionAnalyzer(
       jobDescription,
       resumeText
     );
 
     res.status(200).json({
       status: "success",
-      payload: `${matchScore}`,
+      payload: { ...result },
     });
     return;
   } catch (error: any) {

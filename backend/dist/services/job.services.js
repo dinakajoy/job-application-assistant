@@ -17,80 +17,165 @@ const openai_1 = __importDefault(require("openai"));
 const config_1 = __importDefault(require("config"));
 const apiKey = config_1.default.get("environment.apiKey");
 const openai = new openai_1.default({ apiKey });
+function getEmbedding(text) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield openai.embeddings.create({
+            model: "text-embedding-3-small",
+            input: text,
+        });
+        return response.data[0].embedding;
+    });
+}
+function cosineSimilarity(vecA, vecB) {
+    const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+    const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+    const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+}
 const jobDescriptionAnalyzer = (jobDescription) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g;
+    const tools = {
+        name: "extract_job_insights",
+        description: "Extracts the key skills, responsibilities, and experience from a job description.",
+        parameters: {
+            type: "object",
+            properties: {
+                skills: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "List of key skills required for the job",
+                },
+                responsibilities: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "List of responsibilities for the job",
+                },
+                experience: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Experience or qualifications required for the job",
+                },
+            },
+            required: ["skills", "responsibilities", "experience"],
+            additionalProperties: false,
+        },
+        strict: true,
+    };
     const response = yield openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1",
         messages: [
             {
                 role: "system",
-                content: "You are an AI job coach. Extract the key skills, responsibilities, and required experience from the following job description.",
+                content: "You are an AI job coach.",
             },
             {
                 role: "user",
-                content: jobDescription,
+                content: `Extract the key skills, responsibilities, and required experience from the following job description:\n\n${jobDescription}`,
             },
         ],
+        tools: [
+            {
+                type: "function",
+                function: tools,
+            },
+        ],
+        store: true,
     });
-    return ((_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim()) || "";
+    const functionArgs = (_g = (_f = (_e = (_d = (_c = (_b = (_a = response.choices) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.message) === null || _c === void 0 ? void 0 : _c.tool_calls) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.function) === null || _f === void 0 ? void 0 : _f.arguments) !== null && _g !== void 0 ? _g : "{}";
+    return JSON.parse(functionArgs) || {};
 });
 exports.jobDescriptionAnalyzer = jobDescriptionAnalyzer;
 const resumeForJobDescriptionAnalyzer = (jobDescription, resumeText) => __awaiter(void 0, void 0, void 0, function* () {
+    const [resumeEmbedding, jobEmbedding] = yield Promise.all([
+        getEmbedding(resumeText),
+        getEmbedding(jobDescription),
+    ]);
+    const score = cosineSimilarity(resumeEmbedding, jobEmbedding);
+    let explanation = "";
+    let prompt;
+    if (score >= 0.7) {
+        prompt = `Does the following resume match the job description? Highlight why or why not.`;
+    }
+    else {
+        prompt = `Why is the following resume not a good match for the job description? Be specific and suggest improvements.`;
+    }
     const response = yield openai.chat.completions.create({
         model: "gpt-4",
         messages: [
             {
                 role: "system",
-                content: "You are an AI assistant that compares a resume against a job description and provides a match percentage based on skill relevance.",
+                content: "You are an expert recruiter that compares a resume against a job description based on skill relevance.",
             },
             {
                 role: "user",
-                content: `Compare this resume to the job description and return a match percentage from 0% to 100% based on skills and experience relevance.\n\nResume:\n${resumeText}\n\nJob Description:\n${jobDescription}\n\nRespond in the format: {"matchPercentage": number}`,
+                content: `${prompt}\n\nJob Description:\n${jobDescription}\n\nResume:\n${resumeText}`,
             },
         ],
-        max_tokens: 100,
     });
-    const matchData = JSON.parse(response.choices[0].message.content || "");
-    return matchData.matchPercentage || 0;
+    explanation = response.choices[0].message.content || "";
+    return { score: Number((score * 100).toFixed(2)), explanation };
 });
 exports.resumeForJobDescriptionAnalyzer = resumeForJobDescriptionAnalyzer;
 const getResumeImprovements = (jobDescription, resumeText) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g;
+    const functionSchema = {
+        name: "suggest_resume_improvements",
+        description: "Suggest improvements to a resume for a given job description",
+        parameters: {
+            type: "object",
+            properties: {
+                missing_skills: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "List of important skills missing in the resume based on the job description",
+                },
+                formatting_tips: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Suggestions to improve readability, structure, or style of the resume",
+                },
+                keyword_optimization: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Recommendations to align resume keywords with the job description",
+                },
+            },
+            required: ["missing_skills", "formatting_tips", "keyword_optimization"],
+            additionalProperties: false,
+        },
+        strict: true,
+    };
     const response = yield openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: "gpt-4.1",
         messages: [
             {
                 role: "system",
-                content: "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume. Think step by step, and return specific, actionable improvement suggestions in JSON format.",
+                content: "You are a professional resume coach helping job seekers improve their resumes to match job descriptions. Carefully analyze both the job description and resume.",
             },
             {
                 role: "user",
-                content: `
-        Here is the job description:
-        
+                content: `Given the following job description and resume, suggest improvements in terms of missing skills, formatting, and keyword relevance.
+  
+        Job Description:
         ${jobDescription}
         
-        Here is the user's resume:
-        
+        Resume:
         ${resumeText}
-        
-        Step by step:
-        1. Identify important skills, tools, or experiences required by the job.
-        2. Review the resume and note missing or under-emphasized items.
-        3. Suggest 3–5 specific changes or additions to improve alignment with the job.
-        4. Provide your suggestions clearly with explanations.
-        
-        Return your response in the following JSON format:
-        
-        "improvements\": [\n    {\n      \"missing\": \"Name of missing skill/requirement\",\n      \"suggestion\": \"How to add or emphasize it in the resume\",\n      \"section\": \"Recommended resume section (e.g. Experience, Skills,  Projects)\"\n    },\n    ...\n  ]\n}"
-        
+
         Do not rewrite the resume, just provide actionable improvement hints.
         `,
             },
         ],
+        tools: [
+            {
+                type: "function",
+                function: functionSchema,
+            },
+        ],
+        store: true,
     });
-    const result = JSON.parse(((_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim()) || "");
-    return result.improvements || [];
+    const functionArgs = (_g = (_f = (_e = (_d = (_c = (_b = (_a = response.choices) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.message) === null || _c === void 0 ? void 0 : _c.tool_calls) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.function) === null || _f === void 0 ? void 0 : _f.arguments) !== null && _g !== void 0 ? _g : "{}";
+    return JSON.parse(functionArgs) || {};
 });
 exports.getResumeImprovements = getResumeImprovements;
 const getCoverLetter = (applicantName, jobDescription, resume) => __awaiter(void 0, void 0, void 0, function* () {
@@ -110,7 +195,8 @@ const getCoverLetter = (applicantName, jobDescription, resume) => __awaiter(void
     3. Paragraph showing alignment with the job description
     4. Closing with enthusiasm and invitation to connect
 
-    Do not include markdown or formatting instructions. Just return the plain cover letter.
+    Do not include markdown or formatting instructions. Just return the plain cover letter with no address, just salutation.
+    Each paragraph should not be more than 3 sentences.
     `;
     const response = yield openai.chat.completions.create({
         model: "gpt-4-turbo",
@@ -125,6 +211,7 @@ const getCoverLetter = (applicantName, jobDescription, resume) => __awaiter(void
             },
         ],
         max_tokens: 600,
+        temperature: 0.5,
     });
     return (((_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim()) ||
         "Failed to generate cover letter.");
