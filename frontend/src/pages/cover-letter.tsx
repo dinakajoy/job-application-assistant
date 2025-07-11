@@ -62,7 +62,7 @@ const CoverLetterGeneratorPage = () => {
           setCoverLetter(data.payload);
         }
       }
-    } catch (error) {
+    } catch {
       setError("Error generating cover letter");
     }
     setLoading(false);

@@ -40,7 +40,7 @@ const JobAnalysisPage = () => {
           setError(data.message);
         }
       }
-    } catch (error) {
+    } catch {
       setError("Error analyzing job description");
     }
     setLoading(false);

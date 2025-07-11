@@ -63,7 +63,7 @@ const ResumeImprovementTipsPage = () => {
           setSuggestedImprovements(data.payload);
         }
       }
-    } catch (error) {
+    } catch {
       setError("Error analyzing job description");
     }
     setLoading(false);
