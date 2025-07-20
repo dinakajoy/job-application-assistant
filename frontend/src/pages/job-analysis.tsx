@@ -49,21 +49,20 @@ const JobAnalysisPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-60">
       <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md  text-gray-60">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4 text-center">
           Job Description Analysis
         </h1>
         <textarea
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
           required
           rows={10}
+          id="jobDescription"
           placeholder="Paste job description here..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
         ></textarea>
         {error && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
-            {error}
-          </div>
+          <div className="mt-2 p-2 text-red-700 text-center">{error}</div>
         )}
         <button
           className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed"

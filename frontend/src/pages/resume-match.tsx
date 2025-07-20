@@ -78,6 +78,7 @@ const ResumeMatchPage = () => {
         <textarea
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
           rows={6}
+          id="jobDescription"
           placeholder="Paste job description here..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
@@ -103,9 +104,7 @@ const ResumeMatchPage = () => {
         )}
 
         {error && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
-            {error}
-          </div>
+          <div className="mt-2 p-2 text-red-700 text-center">{error}</div>
         )}
 
         <button

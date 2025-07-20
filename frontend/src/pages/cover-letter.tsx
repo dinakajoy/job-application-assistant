@@ -71,17 +71,17 @@ const CoverLetterGeneratorPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
       <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4 text-center">
           Cover Letter Generator
         </h1>
         <input
           type="text"
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
-          placeholder="(Optional) Enter your name..."
+          placeholder="Enter your name..."
           value={applicantName}
           onChange={(e) => setApplicantName(e.target.value)}
         />
-        <p className="mb-2 text-xs text-red-400">Optional</p>
+        <p className="mb-2 text-xs text-gray-700">Optional</p>
         <div className="mt-4 border-2 border-dashed border-gray-400 rounded-lg p-2 text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
           <label htmlFor="resume-upload" className="cursor-pointer">
             <ArrowUpTrayIcon className="w-5 h-5 mx-auto text-blue-500" />
@@ -97,26 +97,25 @@ const CoverLetterGeneratorPage = () => {
             />
           </label>
         </div>
-        {resume && (
-          <p className="mt-2 text-sm text-gray-600">Uploaded: {resume.name}</p>
-        )}
-        <p className="mb-2 text-xs text-red-400">
-          Optional - However, including a resume allows the AI to tailor the
-          cover letter more specifically to the applicant’s skills and
-          experience, making it stronger.
-        </p>
         <textarea
           className="w-full mt-4 p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 text-gray-800"
           rows={4}
+          id="jobDescription"
           placeholder="Paste job description here..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
         ></textarea>
+        {resume && (
+          <p className="mt-2 text-sm text-gray-600">Uploaded: {resume.name}</p>
+        )}
+        <p className="mb-2 text-xs text-gray-700">
+          <span className="text-red-400">Optional</span> - However, including a
+          resume allows the AI to tailor the cover letter more specifically to
+          the applicant’s skills and experience, making it stronger.
+        </p>
 
         {error && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
-            {error}
-          </div>
+          <div className="mt-2 p-2 text-red-700 text-center">{error}</div>
         )}
 
         <button
