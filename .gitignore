@@ -1,7 +1,0 @@
-.env
-node_modules
-logs
-coverage
-dist
-backend/dist
-/dist

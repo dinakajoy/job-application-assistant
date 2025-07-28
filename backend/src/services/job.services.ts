@@ -22,7 +22,7 @@ function cosineSimilarity(vecA: number[], vecB: number[]) {
 
 // Function Calling with LLM - OpenAI, JSON schema
 export const jobDescriptionAnalyzer = async (jobDescription: string) => {
-  const tools = {
+  const jobInsightFunction = {
     name: "extract_job_insights",
     description:
       "Extracts the key skills, responsibilities, and experience from a job description.",
@@ -66,10 +66,10 @@ export const jobDescriptionAnalyzer = async (jobDescription: string) => {
     tools: [
       {
         type: "function",
-        function: tools,
+        function: jobInsightFunction,
       },
     ],
-    store: true,
+    tool_choice: "auto",
   });
 
   const functionArgs =
