@@ -13,7 +13,7 @@ export const OPTIONS_MAP = {
   ResumeReWrite: "resume-rewrite",
   CoverLetter: "cover-letter",
   EmailContent: "email-content",
-};
+} as const;
 
 export const OPTIONS: Option[] = [
   { label: "Job Analysis", value: OPTIONS_MAP.JobAnalysis },

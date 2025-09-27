@@ -28,7 +28,7 @@ export const UserOptionsProvider = ({ children }: { children: ReactNode }) => {
           OPTIONS_MAP.ResumeMatch,
           OPTIONS_MAP.ResumeImprovementTips,
           OPTIONS_MAP.ResumeReWrite,
-        ].includes(option)
+        ].includes(option as typeof OPTIONS_MAP.ResumeMatch | typeof OPTIONS_MAP.ResumeImprovementTips | typeof OPTIONS_MAP.ResumeReWrite)
       )
     );
   }, [options]);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useJobContext } from "@/context/JobContext";
 import { useAssistantResult } from "@/context/useAssistantResult";
 import { OPTIONS_MAP } from "@/constants";
@@ -12,7 +12,7 @@ const EmailContentGenerator = () => {
 
   const emailContent = (results[OPTIONS_MAP.EmailContent] as string) || null;
 
-  const handleGenerateEmailContent = async () => {
+  const handleGenerateEmailContent = useCallback(async () => {
     setResult(OPTIONS_MAP.EmailContent, null);
 
     if (!jobDescription.trim()) {
@@ -51,11 +51,11 @@ const EmailContentGenerator = () => {
       setError("Error generating email content");
     }
     setLoading(false);
-  };
+  }, [applicantName, jobDescription, resume, setResult]);
 
   useEffect(() => {
     handleGenerateEmailContent();
-  }, []);
+  }, [handleGenerateEmailContent]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

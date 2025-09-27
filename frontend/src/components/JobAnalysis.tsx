@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useJobContext } from "@/context/JobContext";
 import { useAssistantResult } from "@/context/useAssistantResult";
 import { IJobAnalysis, IJobAnalysisResponse } from "@/types";
@@ -15,7 +15,7 @@ const JobAnalysis = () => {
   const analysisResult =
     (results[OPTIONS_MAP.JobAnalysis] as IJobAnalysis) || null;
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = useCallback(async () => {
     setResult(OPTIONS_MAP.JobAnalysis, null);
 
     if (!jobDescription.trim()) {
@@ -51,11 +51,11 @@ const JobAnalysis = () => {
       setError("Error analyzing job description");
     }
     setLoading(false);
-  };
+  }, [jobDescription, setResult]);
 
   useEffect(() => {
     handleAnalyze();
-  }, []);
+  }, [handleAnalyze]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

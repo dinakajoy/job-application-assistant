@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useJobContext } from "@/context/JobContext";
 import { useAssistantResult } from "@/context/useAssistantResult";
 import { OPTIONS_MAP } from "@/constants";
@@ -12,7 +12,7 @@ const CoverLetterGenerator = () => {
 
   const coverLetter = (results[OPTIONS_MAP.CoverLetter] as string) || null;
 
-  const handleGenerateCoverLetter = async () => {
+  const handleGenerateCoverLetter = useCallback(async () => {
     setResult(OPTIONS_MAP.CoverLetter, null);
 
     if (!jobDescription.trim()) {
@@ -51,11 +51,11 @@ const CoverLetterGenerator = () => {
       setError("Error generating cover letter");
     }
     setLoading(false);
-  };
+  }, [applicantName, jobDescription, resume, setResult]);
 
   useEffect(() => {
     handleGenerateCoverLetter();
-  }, []);
+  }, [handleGenerateCoverLetter]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

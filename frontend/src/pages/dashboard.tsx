@@ -4,12 +4,14 @@ import { useUserOptionsContext } from "@/context/UserOptionsContext";
 import { Header } from "@/components/Header";
 import { MatchOptionsToComponent, OPTIONS } from "@/constants";
 
+type OptionKey = keyof typeof MatchOptionsToComponent;
+
 const Dashboard = () => {
   const { options } = useUserOptionsContext();
-  const [active, setActive] = useState<string | null>(null);
+  const [active, setActive] = useState<OptionKey | null>(null);
 
   const handleClick = (value: string) => {
-    setActive((prev) => (prev === value ? null : value));
+    setActive((prev) => (prev === value ? null : value as OptionKey));
   };
 
   return (

@@ -61,7 +61,11 @@ const ResumeMatch = () => {
   };
 
   useEffect(() => {
-    handleMatchResume();
+    const fetchMatchResume = async () => {
+      await handleMatchResume();
+    };
+    fetchMatchResume();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

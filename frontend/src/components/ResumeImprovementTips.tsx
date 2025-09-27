@@ -58,7 +58,11 @@ const ResumeImprovementTips = () => {
   };
 
   useEffect(() => {
-    handleResumeImprovements();
+    const fetchImprovements = async () => {
+      await handleResumeImprovements();
+    };
+    fetchImprovements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
