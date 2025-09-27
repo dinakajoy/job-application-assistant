@@ -192,6 +192,65 @@ export const getResumeImprovements = async (
   return JSON.parse(functionArgs) || {};
 };
 
+export const getRewrittenResume = async (
+  resume: string,
+  jobAnalysis: string,
+  resumeMatch: number,
+  resumeTips: string
+): Promise<string> => {
+  const prompt = `
+You are a resume rewriting assistant.
+Here is the user's resume: ${JSON.stringify(resume)}
+Here is the job analysis: ${JSON.stringify(jobAnalysis)}
+Here is the resume match: ${JSON.stringify(resumeMatch)}
+Here are the improvement tips: ${JSON.stringify(resumeTips)}
+
+Rewrite the resume to best fit the role. 
+
+Return ONLY valid JSON with the following keys:
+{
+  "summary": "string",
+  "skills_section": ["skill1", "skill2", "skill3"],
+  "experience_section": [
+    {
+      "title": "string",
+      "company": "string",
+      "dates": "string",
+      "description": ["bullet1", "bullet2"]
+    }
+  ],
+  "improvements_applied": ["what was changed"]
+}
+Do not include any extra commentary or formatting.
+`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-turbo",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a senior career coach and professional writer. You craft personalized, persuasive resumes that align a candidate’s experience and skills with the job description. Rewrite this users resume to highlight key qualifications naturally, updating already existing resume.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    max_tokens: 600,
+    temperature: 0.5,
+  });
+
+  const result = response.choices[0]?.message?.content?.trim() || "{}";
+  let parsed;
+  try {
+    parsed = JSON.parse(result);
+  } catch {
+    throw new Error("Invalid JSON from AI");
+  }
+  return parsed;
+};
+
 // Prompting via template with resume and job description - OpenAI, prompt templates
 export const getCoverLetter = async (
   applicantName: string,
@@ -237,5 +296,52 @@ export const getCoverLetter = async (
   return (
     response.choices[0]?.message?.content?.trim() ||
     "Failed to generate cover letter."
+  );
+};
+
+export const getEmailContent = async (
+  applicantName: string,
+  jobDescription: string,
+  resume: string
+): Promise<string> => {
+  const userPrompt = `
+${applicantName ? `The applicant's name is ${applicantName.trim()}.` : ""}
+Here is the job description:
+${jobDescription}
+
+Here is the applicant's resume:
+${resume}
+
+Please generate a professional, concise job application email tailored to this role. 
+Follow this format:
+1. A polite greeting and a sentence expressing interest in the role.
+2. A short paragraph (2–3 sentences) summarizing the applicant’s most relevant skills and experiences that align with the job description.
+3. A sentence highlighting enthusiasm for the company/role and willingness to discuss further.
+4. A polite closing.
+
+Do not include markdown or formatting instructions. Just return the plain email text. 
+Keep it under 200 words.
+`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-turbo",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a senior career coach and professional writer. You craft concise, compelling job application emails that highlight the applicant’s fit for the role in a professional yet approachable tone.",
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+    max_tokens: 600,
+    temperature: 0.5,
+  });
+
+  return (
+    response.choices[0]?.message?.content?.trim() ||
+    "Failed to generate email content."
   );
 };

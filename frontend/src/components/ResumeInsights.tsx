@@ -1,6 +1,10 @@
-import { IResumeTips } from "@/types/types";
+import { IResumeTips } from "@/types";
 
-export default function ResumeInsights({ missing_skills, formatting_tips, keyword_optimization }: IResumeTips) {
+export default function ResumeInsights({
+  missing_skills,
+  formatting_tips,
+  keyword_optimization,
+}: IResumeTips) {
   return (
     <div className="grid grid-cols-1 gap-6">
       {/* Skills Section */}
@@ -17,11 +21,13 @@ export default function ResumeInsights({ missing_skills, formatting_tips, keywor
 
 function Section({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+    <div className="shadow-md rounded-2xl p-6 border border-gray-200">
       <h2 className="text-xl font-semibold mb-4 text-gray-700">{title}</h2>
       <ul className="list-disc pl-5 space-y-2 text-gray-700">
         {items.map((item, idx) => (
-          <li key={idx} className="text-sm">{item}</li>
+          <li key={idx} className="text-sm">
+            {item}
+          </li>
         ))}
       </ul>
     </div>

@@ -1,15 +1,18 @@
 import { Router } from "express";
 import upload from "../middlewares/upload";
 import {
-  coverLetterValidation,
   jobDescriptionValidation,
+  optionalResumeAndJobDescriptionValidation,
   resumeAndJobDescriptionValidation,
+  rewriteResumeForJobValidation,
   validate,
 } from "../validations/job.validation";
 import {
   analyzeJobDescription,
   analyzeResumeForJob,
   generateCoverLetter,
+  generateEmailContent,
+  rewriteResumeForJob,
   suggestResumeImprovements,
 } from "../controllers/job.controller";
 
@@ -39,11 +42,27 @@ router.post(
 );
 
 router.post(
+  "/rewrite-resume",
+  upload.single("resume"),
+  // rewriteResumeForJobValidation(),
+  // validate,
+  rewriteResumeForJob
+);
+
+router.post(
   "/generate-cover-letter",
   upload.single("resume"),
-  resumeAndJobDescriptionValidation(),
+  optionalResumeAndJobDescriptionValidation(),
   validate,
   generateCoverLetter
+);
+
+router.post(
+  "/generate-email-content",
+  upload.single("resume"),
+  optionalResumeAndJobDescriptionValidation(),
+  validate,
+  generateEmailContent
 );
 
 export default router;

@@ -33,21 +33,41 @@ export interface IResumeTipsResponse {
   payload?: IResumeTips;
 }
 
+export type IResumeRewrite = {
+  summary: string;
+  skills_section: string[];
+  experience_section: {
+    title: string;
+    company: string;
+    dates: string;
+    description: string[];
+  }[];
+  improvements_applied: string[];
+};
 
+export interface IResumeRewriteResponse {
+  status: string;
+  message?: string;
+  payload?: IResumeRewrite;
+}
 
-export interface IResponse {
+export interface ICoverLetterResponse {
   status: string;
   message?: string;
   payload?: string;
 }
 
-export type ISugestion = {
-  missing: string;
-  suggestion: string;
-  section: string;
-};
-export interface ISugestionResponse {
+export interface IEmailContentResponse {
   status: string;
   message?: string;
-  payload?: ISugestion[];
+  payload?: string;
 }
+
+export type Option = {
+  label: string;
+  value: string;
+};
+
+export type UsersOptionsProps = {
+  editable?: boolean;
+};

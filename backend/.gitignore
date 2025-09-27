@@ -1,6 +1,5 @@
 .env
-node_modules
-logs
-coverage
-dist
-./dist/
+node_modules/
+logs/
+coverage/
+dist/

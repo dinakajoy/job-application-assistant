@@ -1,10 +1,12 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import pdf from "pdf-parse";
 import {
   jobDescriptionAnalyzer,
   resumeForJobDescriptionAnalyzer,
   getCoverLetter,
   getResumeImprovements,
+  getEmailContent,
+  getRewrittenResume,
 } from "../services/job.services";
 import logger from "../utils/logger";
 
@@ -122,16 +124,16 @@ export const suggestResumeImprovements = async (
   }
 };
 
-export const generateCoverLetter = async (
+export const rewriteResumeForJob = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { applicantName, jobDescription } = req.body;
-    if (!jobDescription) {
+    const { jobAnalysis, resumeMatch, resumeTips } = req.body;
+    if (!jobAnalysis || !resumeMatch || !resumeTips) {
       res
         .status(400)
-        .json({ status: "error", message: "Job description is required" });
+        .json({ status: "error", message: "All fields are required" });
       return;
     }
 
@@ -145,7 +147,52 @@ export const generateCoverLetter = async (
 
     // Extract text from the uploaded PDF
     const pdfText = await pdf(resumeFile.buffer);
-    const resume = pdfText.text;
+    const resumeText = pdfText.text;
+
+    const resumeJson = await getRewrittenResume(
+      resumeText,
+      jobAnalysis,
+      resumeMatch,
+      resumeTips
+    );
+    // console.log("Resume JSON:", resumeJson);
+    // await generateResumePDF(resumeJson, "resume.pdf");
+    // res.download("resume.pdf");
+
+    res.status(200).json({
+      status: "success",
+      payload: resumeJson,
+    });
+    return;
+  } catch (error: any) {
+    logger.error(`rewriteResumeForJob Controller Error: ${error.message}`);
+    res
+      .status(500)
+      .json({ status: "error", message: "Failed to rewrite resume" });
+    return;
+  }
+};
+
+export const generateCoverLetter = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { applicantName, jobDescription } = req.body;
+    if (!jobDescription) {
+      res
+        .status(400)
+        .json({ status: "error", message: "Job description is required" });
+      return;
+    }
+    let resume = "";
+
+    const resumeFile = req.file;
+    if (resumeFile) {
+      // Extract text from the uploaded PDF
+      const pdfText = await pdf(resumeFile.buffer);
+      resume = pdfText.text;
+    }
 
     const payload = await getCoverLetter(applicantName, jobDescription, resume);
     res.status(200).json({ status: "success", payload });
@@ -155,6 +202,44 @@ export const generateCoverLetter = async (
     res
       .status(500)
       .json({ status: "error", message: "Failed to generate cover letter" });
+    return;
+  }
+};
+
+export const generateEmailContent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { applicantName, jobDescription } = req.body;
+    if (!jobDescription) {
+      res
+        .status(400)
+        .json({ status: "error", message: "Job description is required" });
+      return;
+    }
+
+    const resumeFile = req.file;
+    let resume = "";
+
+    if (resumeFile) {
+      // Extract text from the uploaded PDF
+      const pdfText = await pdf(resumeFile.buffer);
+      resume = pdfText.text;
+    }
+
+    const payload = await getEmailContent(
+      applicantName,
+      jobDescription,
+      resume
+    );
+    res.status(200).json({ status: "success", payload });
+    return;
+  } catch (error: any) {
+    logger.error(`  generateEmailContent Controller Error: ${error.message}`);
+    res
+      .status(500)
+      .json({ status: "error", message: "Failed to generate email content" });
     return;
   }
 };
