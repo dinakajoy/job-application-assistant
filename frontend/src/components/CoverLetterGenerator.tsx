@@ -1,28 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
-import { useJobDataStore } from "@/context/useJobDataStore";
-import { useAssistantResultStore } from "@/context/useAssistantResultStore";
+import { useJobContext } from "@/context/JobContext";
+import { useAssistantResult } from "@/context/useAssistantResult";
 import { OPTIONS_MAP } from "@/constants";
 import PageLoader from "./PageLoader";
 
 const CoverLetterGenerator = () => {
-  const { preparedData, loadPreparedData } = useJobDataStore();
-  const { results, setResult, loadResult } = useAssistantResultStore();
+  const { applicantName, jobDescription, resume } = useJobContext();
+  const { results, setResult } = useAssistantResult();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const coverLetter = (results[OPTIONS_MAP.CoverLetter] as string) || null;
 
   const handleGenerateCoverLetter = useCallback(async () => {
-    // check cache first
-    const cached = await loadResult(OPTIONS_MAP.CoverLetter);
-    if (cached) {
-      setLoading(false);
-      return;
-    }
-
     setResult(OPTIONS_MAP.CoverLetter, null);
 
-    if (!preparedData?.jobDescription.trim()) {
+    if (!jobDescription.trim()) {
       setError("Please enter a job description.");
       return;
     }
@@ -30,14 +23,18 @@ const CoverLetterGenerator = () => {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      if (resume) {
+        formData.append("resume", resume);
+      }
+      formData.append("jobDescription", jobDescription);
+      formData.append("applicantName", applicantName);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/generate-cover-letter`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...preparedData,
-          }),
+          body: formData,
         }
       );
       const data = await response.json();
@@ -54,16 +51,11 @@ const CoverLetterGenerator = () => {
       setError("Error generating cover letter");
     }
     setLoading(false);
-  }, [preparedData, setResult, loadResult]);
+  }, [applicantName, jobDescription, resume, setResult]);
 
   useEffect(() => {
     handleGenerateCoverLetter();
   }, [handleGenerateCoverLetter]);
-
-  useEffect(() => {
-    // hydrate from IndexedDB on mount
-    loadPreparedData();
-  }, [loadPreparedData]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

@@ -1,23 +1,18 @@
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useUserOptionsStore } from "@/context/useUserOptionsStore";
+import { useState } from "react";
+import { useUserOptionsContext } from "@/context/UserOptionsContext";
 import { Header } from "@/components/Header";
 import { MatchOptionsToComponent, OPTIONS } from "@/constants";
 
 type OptionKey = keyof typeof MatchOptionsToComponent;
 
 const Dashboard = () => {
-  const { options, loadOptions } = useUserOptionsStore();
+  const { options } = useUserOptionsContext();
   const [active, setActive] = useState<OptionKey | null>(null);
 
   const handleClick = (value: string) => {
-    setActive((prev) => (prev === value ? null : (value as OptionKey)));
+    setActive((prev) => (prev === value ? null : value as OptionKey));
   };
-
-  useEffect(() => {
-    // hydrate from IndexedDB on mount
-    loadOptions();
-  }, [loadOptions]);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">

@@ -1,37 +1,28 @@
 import { useEffect, useState } from "react";
-import { useJobDataStore } from "@/context/useJobDataStore";
-import { useAssistantResultStore } from "@/context/useAssistantResultStore";
+import { useJobContext } from "@/context/JobContext";
+import { useAssistantResult } from "@/context/useAssistantResult";
 import { IResumeTips, IResumeTipsResponse } from "@/types";
+import ResumeInsights from "./ResumeInsights";
 import { OPTIONS_MAP } from "@/constants";
 import PageLoader from "./PageLoader";
-import ResumeInsights from "./ResumeInsights";
 
 const ResumeImprovementTips = () => {
-  const { preparedData, loadPreparedData } = useJobDataStore();
-  const { results, setResult, loadResult } = useAssistantResultStore();
+  const { jobDescription, resume } = useJobContext();
+  const { results, setResult } = useAssistantResult();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const jobDescription = preparedData?.jobDescription || "";
-  const resumeText = preparedData?.resumeText || null;
   const suggestedImprovements =
     (results[OPTIONS_MAP.ResumeImprovementTips] as IResumeTips) || null;
 
   const handleResumeImprovements = async () => {
-    // check cache first
-    const cached = await loadResult(OPTIONS_MAP.ResumeImprovementTips);
-    if (cached) {
-      setLoading(false);
-      return;
-    }
-
     setResult(OPTIONS_MAP.ResumeImprovementTips, null);
 
     if (!jobDescription.trim()) {
       setError("Please enter a job description.");
       return;
     }
-    if (!resumeText) {
+    if (!resume) {
       setError("Please upload your resume.");
       return;
     }
@@ -39,12 +30,15 @@ const ResumeImprovementTips = () => {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("resume", resume);
+      formData.append("jobDescription", jobDescription);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/resume-improvements`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobDescription, resumeText }),
+          body: formData,
         }
       );
       const data: IResumeTipsResponse = await response.json();
@@ -70,11 +64,6 @@ const ResumeImprovementTips = () => {
     fetchImprovements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    // hydrate from IndexedDB on mount
-    loadPreparedData();
-  }, [loadPreparedData]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

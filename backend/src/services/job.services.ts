@@ -202,8 +202,8 @@ export const getRewrittenResume = async (
 You are a resume rewriting assistant.
 Here is the user's resume: ${JSON.stringify(resume)}
 Here is the job analysis: ${JSON.stringify(jobAnalysis)}
-Here is the resume match: ${JSON.stringify(resumeMatch)}
-Here are the improvement tips: ${JSON.stringify(resumeTips)}
+Here is the resume match details: ${JSON.stringify(resumeMatch)}
+Here are the resume improvement tips: ${JSON.stringify(resumeTips)}
 
 Rewrite the resume to best fit the role. 
 

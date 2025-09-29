@@ -1,21 +1,3 @@
-export type JobData = {
-  applicantName: string;
-  jobDescription: string;
-  resume: File | null;
-};
-
-export type IPreparedData = {
-  applicantName: string;
-  jobDescription: string;
-  resumeText: string;
-};
-
-export interface IPreparedDataResponse {
-  status: string;
-  message?: string;
-  payload?: IPreparedData; 
-}
-
 export type IJobAnalysis = {
   skills: string[];
   responsibilities: string[];

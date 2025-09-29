@@ -12,11 +12,20 @@ import {
   analyzeResumeForJob,
   generateCoverLetter,
   generateEmailContent,
+  prepareJobData,
   rewriteResumeForJob,
   suggestResumeImprovements,
 } from "../controllers/job.controller";
 
 const router = Router();
+
+router.post(
+  "/prepare",
+  upload.single("resume"),
+  optionalResumeAndJobDescriptionValidation(),
+  validate,
+  prepareJobData
+);
 
 router.post(
   "/analyze",
@@ -27,7 +36,6 @@ router.post(
 
 router.post(
   "/match-resume",
-  upload.single("resume"),
   resumeAndJobDescriptionValidation(),
   validate,
   analyzeResumeForJob
@@ -35,7 +43,6 @@ router.post(
 
 router.post(
   "/resume-improvements",
-  upload.single("resume"),
   resumeAndJobDescriptionValidation(),
   validate,
   suggestResumeImprovements
@@ -43,15 +50,13 @@ router.post(
 
 router.post(
   "/rewrite-resume",
-  upload.single("resume"),
-  // rewriteResumeForJobValidation(),
-  // validate,
+  rewriteResumeForJobValidation(),
+  validate,
   rewriteResumeForJob
 );
 
 router.post(
   "/generate-cover-letter",
-  upload.single("resume"),
   optionalResumeAndJobDescriptionValidation(),
   validate,
   generateCoverLetter
@@ -59,7 +64,6 @@ router.post(
 
 router.post(
   "/generate-email-content",
-  upload.single("resume"),
   optionalResumeAndJobDescriptionValidation(),
   validate,
   generateEmailContent

@@ -1,5 +1,5 @@
-import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import { IResumeRewrite } from "@/types";
+import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: { padding: 30, fontSize: 10, fontWeight: "normal", lineHeight: 1.5 },

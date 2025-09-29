@@ -1,10 +1,10 @@
 import JobAnalysis from "@/components/JobAnalysis";
 import ResumeMatch from "@/components/ResumeMatch";
 import ResumeImprovementTips from "@/components/ResumeImprovementTips";
-import ResumeRewrite from "@/components/ResumeRewrite";
+import ResumeRewrite from "./components/ResumeRewrite";
 import CoverLetterGenerator from "@/components/CoverLetterGenerator";
-import EmailContentGenerator from "@/components/EmailContentGenerator";
-import { Option } from "@/types";
+import EmailContentGenerator from "./components/EmailContentGenerator";
+import { Option } from "./types";
 
 export const OPTIONS_MAP = {
   JobAnalysis: "job-analysis",

@@ -1,28 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
-import { useJobDataStore } from "@/context/useJobDataStore";
-import { useAssistantResultStore } from "@/context/useAssistantResultStore";
+import { useJobContext } from "@/context/JobContext";
+import { useAssistantResult } from "@/context/useAssistantResult";
 import { OPTIONS_MAP } from "@/constants";
 import PageLoader from "./PageLoader";
 
 const EmailContentGenerator = () => {
-  const { preparedData, loadPreparedData } = useJobDataStore();
-  const { results, setResult, loadResult } = useAssistantResultStore();
+  const { applicantName, jobDescription, resume } = useJobContext();
+  const { results, setResult } = useAssistantResult();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const emailContent = (results[OPTIONS_MAP.EmailContent] as string) || null;
 
   const handleGenerateEmailContent = useCallback(async () => {
-    // check cache first
-    const cached = await loadResult(OPTIONS_MAP.EmailContent);
-    if (cached) {
-      setLoading(false);
-      return;
-    }
-
     setResult(OPTIONS_MAP.EmailContent, null);
 
-    if (!preparedData?.jobDescription.trim()) {
+    if (!jobDescription.trim()) {
       setError("Please enter a job description.");
       return;
     }
@@ -30,14 +23,18 @@ const EmailContentGenerator = () => {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      if (resume) {
+        formData.append("resume", resume);
+      }
+      formData.append("jobDescription", jobDescription);
+      formData.append("applicantName", applicantName);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/generate-email-content`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...preparedData,
-          }),
+          body: formData,
         }
       );
       const data = await response.json();
@@ -54,16 +51,11 @@ const EmailContentGenerator = () => {
       setError("Error generating email content");
     }
     setLoading(false);
-  }, [preparedData, setResult, loadResult]);
+  }, [applicantName, jobDescription, resume, setResult]);
 
   useEffect(() => {
     handleGenerateEmailContent();
   }, [handleGenerateEmailContent]);
-
-  useEffect(() => {
-    // hydrate from IndexedDB on mount
-    loadPreparedData();
-  }, [loadPreparedData]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

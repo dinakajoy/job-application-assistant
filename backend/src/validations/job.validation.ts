@@ -19,37 +19,13 @@ export const resumeAndJobDescriptionValidation = () => [
     .isLength({ min: 10 })
     .escape()
     .withMessage("Job description must be at least 10 characters long"),
-  body("resume").custom((value, { req }) => {
-    if (!req.file) {
-      throw new Error("Resume file is required");
-    }
-    if (req.file.mimetype !== "application/pdf") {
-      throw new Error("Only PDF format is allowed");
-    }
-    return true;
-  }),
-];
-
-export const optionalResumeAndJobDescriptionValidation = () => [
-  body("applicantName").trim().escape().optional(),
-  body("jobDescription")
+  body("resumeText")
     .not()
     .isEmpty()
     .trim()
     .isLength({ min: 10 })
     .escape()
-    .withMessage("Job description must be at least 10 characters long"),
-  body("resume").optional(),
-  body("resume").custom((value, { req }) => {
-    if (!req.file) {
-      // If resume is not provided, skip further validation
-      return true;
-    }
-    if (req.file.mimetype !== "application/pdf") {
-      throw new Error("Only PDF format is allowed");
-    }
-    return true;
-  }),
+    .withMessage("Resume file is requiredg"),
 ];
 
 export const rewriteResumeForJobValidation = () => [
@@ -57,11 +33,7 @@ export const rewriteResumeForJobValidation = () => [
     if (typeof value !== "object" || Array.isArray(value)) {
       throw new Error("Job Analysis must be an object");
     }
-    const requiredFields = [
-      "experience",
-      "responsibilities",
-      "skills",
-    ];
+    const requiredFields = ["experience", "responsibilities", "skills"];
     for (const field of requiredFields) {
       if (!(field in value)) {
         throw new Error(`"Job Analysis must include the field: ${field}`);
@@ -73,10 +45,7 @@ export const rewriteResumeForJobValidation = () => [
     if (typeof value !== "object" || Array.isArray(value)) {
       throw new Error("resumeMatch must be an object");
     }
-    const requiredFields = [
-      "explanation",
-      "score",
-    ];
+    const requiredFields = ["explanation", "score"];
     for (const field of requiredFields) {
       if (!(field in value)) {
         throw new Error(`resumeMatch must include the field: ${field}`);
@@ -100,6 +69,25 @@ export const rewriteResumeForJobValidation = () => [
     }
     return true;
   }),
+  body("resumeText")
+    .not()
+    .isEmpty()
+    .trim()
+    .isLength({ min: 10 })
+    .escape()
+    .withMessage("Resume file is requiredg"),
+];
+
+export const optionalResumeAndJobDescriptionValidation = () => [
+  body("applicantName").optional().trim().escape(),
+  body("jobDescription")
+    .not()
+    .isEmpty()
+    .trim()
+    .isLength({ min: 10 })
+    .escape()
+    .withMessage("Job description must be at least 10 characters long"),
+  body("resumeText").optional().trim().escape(),
 ];
 
 export const validate = (req: Request, res: Response, next: NextFunction) => {

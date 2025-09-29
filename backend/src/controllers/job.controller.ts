@@ -10,6 +10,40 @@ import {
 } from "../services/job.services";
 import logger from "../utils/logger";
 
+export const prepareJobData = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { applicantName, jobDescription } = req.body;
+
+  let applicant = applicantName || "Applicant";
+  if (!jobDescription) {
+    res
+      .status(400)
+      .json({ status: "error", message: "Job description is required" });
+    return;
+  }
+
+  const resumeFile = req.file;
+  let resumeText = "";
+  if (resumeFile) {
+    const pdfText = await pdf(resumeFile.buffer);
+    resumeText = pdfText.text;
+  }
+
+  const jobDataAsJson = {
+    applicantName: applicant,
+    jobDescription,
+    resumeText,
+  };
+
+  res.status(200).json({
+    status: "success",
+    payload: jobDataAsJson,
+  });
+  return;
+};
+
 export const analyzeJobDescription = async (
   req: Request,
   res: Response
@@ -40,25 +74,20 @@ export const analyzeResumeForJob = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { jobDescription } = req.body;
+    const { jobDescription, resumeText } = req.body;
     if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
       return;
     }
-
-    const resumeFile = req.file;
-    if (!resumeFile) {
+    if (!resumeText) {
       res
         .status(400)
         .json({ status: "error", message: "Resume file is required" });
       return;
     }
 
-    // Extract text from the uploaded PDF
-    const pdfText = await pdf(resumeFile.buffer);
-    const resumeText = pdfText.text;
     const result = await resumeForJobDescriptionAnalyzer(
       jobDescription,
       resumeText
@@ -83,25 +112,20 @@ export const suggestResumeImprovements = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { jobDescription } = req.body;
+    const { jobDescription, resumeText } = req.body;
     if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
       return;
     }
-
-    const resumeFile = req.file;
-    if (!resumeFile) {
+    if (!resumeText) {
       res
         .status(400)
         .json({ status: "error", message: "Resume file is required" });
       return;
     }
 
-    // Extract text from the uploaded PDF
-    const pdfText = await pdf(resumeFile.buffer);
-    const resumeText = pdfText.text;
     const suggestedKeywords = await getResumeImprovements(
       jobDescription,
       resumeText
@@ -129,7 +153,7 @@ export const rewriteResumeForJob = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { jobAnalysis, resumeMatch, resumeTips } = req.body;
+    const { jobAnalysis, resumeMatch, resumeTips, resumeText } = req.body;
     if (!jobAnalysis || !resumeMatch || !resumeTips) {
       res
         .status(400)
@@ -137,17 +161,12 @@ export const rewriteResumeForJob = async (
       return;
     }
 
-    const resumeFile = req.file;
-    if (!resumeFile) {
+    if (!resumeText) {
       res
         .status(400)
         .json({ status: "error", message: "Resume file is required" });
       return;
     }
-
-    // Extract text from the uploaded PDF
-    const pdfText = await pdf(resumeFile.buffer);
-    const resumeText = pdfText.text;
 
     const resumeJson = await getRewrittenResume(
       resumeText,
@@ -155,9 +174,6 @@ export const rewriteResumeForJob = async (
       resumeMatch,
       resumeTips
     );
-    // console.log("Resume JSON:", resumeJson);
-    // await generateResumePDF(resumeJson, "resume.pdf");
-    // res.download("resume.pdf");
 
     res.status(200).json({
       status: "success",
@@ -178,23 +194,19 @@ export const generateCoverLetter = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { applicantName, jobDescription } = req.body;
+    const { applicantName, jobDescription, resumeText } = req.body;
     if (!jobDescription) {
       res
         .status(400)
         .json({ status: "error", message: "Job description is required" });
       return;
     }
-    let resume = "";
 
-    const resumeFile = req.file;
-    if (resumeFile) {
-      // Extract text from the uploaded PDF
-      const pdfText = await pdf(resumeFile.buffer);
-      resume = pdfText.text;
-    }
-
-    const payload = await getCoverLetter(applicantName, jobDescription, resume);
+    const payload = await getCoverLetter(
+      applicantName,
+      jobDescription,
+      resumeText || ""
+    );
     res.status(200).json({ status: "success", payload });
     return;
   } catch (error: any) {
@@ -211,7 +223,7 @@ export const generateEmailContent = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { applicantName, jobDescription } = req.body;
+    const { applicantName, jobDescription, resumeText } = req.body;
     if (!jobDescription) {
       res
         .status(400)
@@ -231,7 +243,7 @@ export const generateEmailContent = async (
     const payload = await getEmailContent(
       applicantName,
       jobDescription,
-      resume
+      resumeText || ""
     );
     res.status(200).json({ status: "success", payload });
     return;

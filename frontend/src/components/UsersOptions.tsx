@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
-import { useUserOptionsStore } from "@/context/useUserOptionsStore";
-import { OPTIONS, OPTIONS_MAP } from "@/constants";
+import React from "react";
+import { useUserOptionsContext } from "@/context/UserOptionsContext";
 import { UsersOptionsProps } from "@/types";
+import { OPTIONS, OPTIONS_MAP } from "@/constants";
 
 const UsersOptions: React.FC<UsersOptionsProps> = ({ editable = true }) => {
-  const { options, setOptions, loadOptions, clearOptions } = useUserOptionsStore();
+  const { options, setOptions } = useUserOptionsContext();
 
   const OPTION_DEPENDENCIES: Record<string, string[]> = {
     [OPTIONS_MAP.ResumeReWrite]: [
@@ -14,32 +14,25 @@ const UsersOptions: React.FC<UsersOptionsProps> = ({ editable = true }) => {
     ],
   };
 
-  useEffect(() => {
-    // hydrate from IndexedDB on mount
-    loadOptions();
-  }, [loadOptions]);
-
-  const toggleOption = async (value: string) => {
-    if (!editable) return;
-
-    await clearOptions();
-    let newOptions = options;
-
-    if (value === OPTIONS_MAP.ResumeReWrite) {
-      if (!options.includes(value)) {
-        newOptions = [
-          ...new Set([...options, value, ...OPTION_DEPENDENCIES[value]]),
-        ];
-      } else {
-        newOptions = options.filter((opt) => opt !== value);
+  const toggleOption = (value: string) => {
+    if (!editable || !setOptions) return;
+    setOptions((prev) => {
+      // If enabling ResumeRewrite, add its dependencies
+      if (value === OPTIONS_MAP.ResumeReWrite) {
+        if (!prev.includes(value)) {
+          return [...new Set([...prev, value, ...OPTION_DEPENDENCIES[value]])];
+        } else {
+          // Unticking ResumeRewrite should not untick dependencies
+          return prev.filter((opt) => opt !== value);
+        }
       }
-    } else if (options.includes(value)) {
-      newOptions = options.filter((opt) => opt !== value);
-    } else {
-      newOptions = [...options, value];
-    }
-
-    setOptions(newOptions);
+      // otherwise normal toggle
+      if (prev.includes(value)) {
+        return prev.filter((opt) => opt !== value);
+      } else {
+        return [...prev, value];
+      }
+    });
   };
 
   return (
