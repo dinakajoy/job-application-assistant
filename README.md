@@ -1,50 +1,88 @@
-# AI-Powered Project Idea: Smart Job Application Assistant
+# Job Application Assistant
 
-A web app that helps job seekers **analyze job descriptions** and **tailor their resumes** using AI.
+A web app that helps job seekers **analyze job descriptions**, **improve their resumes**, and **generate tailored cover letters** using AI.  
+The goal is to make applying for jobs faster, smarter, and less stressful.
 
-> This app is optimized to work with instruction-tuned LLMs (GPT-4-turbo) using:
-
-- Prompting for content generation (e.g., cover letters)
-- Chain-of-Thought prompting for reasoning-based tasks (e.g., resume vs job alignment)
-  Together, these approaches enable accurate, structured, and intelligent AI-assisted job application support.
+---
 
 ## Features
 
 ### ✅ Job Description Analysis
 
-- User pastes a job description.
-- AI extracts key skills and responsibilities.
+- Paste any job description.
+- AI extracts **key skills** and **responsibilities**.
 
 ### ✅ Resume Matching Score
 
-- User uploads their resume.
-- AI compares it against the job description and gives a **match percentage**.
+- Upload your resume.
+- Get a **match percentage** against the job description.
 
 ### ✅ Resume Improvement Suggestions
 
-- AI suggests **improvements to add** to the resume for a better match.
+- AI suggests **specific improvements** to strengthen your resume.
 
 ### ✅ Cover Letter Generator
 
-- AI generates a **customized cover letter** based on the job description.
+- Automatically generates a **customized cover letter** for the role.
+
+### ✅ Application Email Generator
+
+- Drafts a **professional email** for job applications.
+
+### ✅ Guest Progress Persistence
+
+- Thanks to **IndexedDB**, progress is saved locally — no account needed.
+- Reload the page without losing your results.
+
+---
 
 ## 🛠 Tech Stack
 
-- **Frontend:** Next.js, TypeScript and TailwindCSS
-- **Backend:** Express.js with TypeScript (Handles API requests)
-- **Testing:** Jest (with Supertest for API testing)
-- **AI API:** OpenAI GPT-4 (Extracts skills & generates suggestions)
+- **Frontend:** [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [TailwindCSS](https://tailwindcss.com/)
+- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
+- **Storage:** IndexedDB
+- **Backend:** [Express.js](https://expressjs.com/) with TypeScript
+- **Testing:** [Jest](https://jestjs.io/) + [Supertest](https://github.com/ladjs/supertest)
+- **AI API:** OpenAI GPT-4 (analysis, scoring, suggestions, and generation)
 
-### Possible Improvements
+---
 
-- More Customization in Cover Letters  
-  Allow users to input their years of experience, career goals, and strengths to make cover letters more personalized.
-- Better Resume Matching Score  
-  Instead of just a match percentage, provide detailed feedback on what’s missing (e.g., “You lack experience with React.js, which is a key skill in the job description”).
-- AI-Powered Resume Builder  
-  Generate a complete AI-written resume based on job descriptions and user input.
-- Job Application Email Generator  
-  Draft a professional email for submitting job applications.
-- LinkedIn Profile Optimization  
-  Suggest LinkedIn profile improvements based on job descriptions
-- Add authentication and keep track of applications and status
+## Getting Started
+
+1. Clone the repo:
+
+```bash
+git clone https://github.com/dinakajoy/job-application-assistant.git
+cd job-application-assistant
+```
+
+2. Install dependencies:
+
+```
+cd backend
+npm install
+```
+
+```
+cd frontend
+npm install
+```
+
+3. Set up environment variables. Check `.env-example` files:
+
+```
+OPENAI_API_KEY=your_api_key_here
+```
+
+4. Run the dev server for both frontend and backend:
+
+```
+npm run dev
+```
+
+---
+
+## Contributing
+
+Contributions are welcome!
+If you would like to suggest a feature or fix, feel free to open an issue or PR.
