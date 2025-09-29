@@ -1,13 +1,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useUserOptionsContext } from "@/context/UserOptionsContext";
+import { useUserOptionsStore } from "@/context/useUserOptionsStore";
 import Feature from "@/components/Feature";
 import { Header } from "@/components/Header";
 import UsersOptions from "@/components/UsersOptions";
 
 const Home = () => {
   const router = useRouter();
-  const { options } = useUserOptionsContext();
+  const { options } = useUserOptionsStore();
 
   const [error, setError] = useState<string | null>(null);
 
