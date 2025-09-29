@@ -1,28 +1,37 @@
 import { useEffect, useState } from "react";
-import { useJobContext } from "@/context/JobContext";
-import { useAssistantResult } from "@/context/useAssistantResult";
+import { useJobDataStore } from "@/context/useJobDataStore";
+import { useAssistantResultStore } from "@/context/useAssistantResultStore";
 import { IResumeMatch, IResumeMatchResponse } from "@/types";
-import MarkdownRenderer from "./MarkdownRenderer";
 import { OPTIONS_MAP } from "@/constants";
+import MarkdownRenderer from "./MarkdownRenderer";
 import PageLoader from "./PageLoader";
 
 const ResumeMatch = () => {
-  const { jobDescription, resume } = useJobContext();
-  const { results, setResult } = useAssistantResult();
+  const { preparedData, loadPreparedData } = useJobDataStore();
+  const { results, setResult, loadResult } = useAssistantResultStore();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const jobDescription = preparedData?.jobDescription || "";
+  const resumeText = preparedData?.resumeText || null;
   const matchResult =
     (results[OPTIONS_MAP.ResumeMatch] as IResumeMatch) || null;
 
   const handleMatchResume = async () => {
+    // check cache first
+    const cached = await loadResult(OPTIONS_MAP.ResumeMatch);
+    if (cached) {
+      setLoading(false);
+      return;
+    }
+
     setResult(OPTIONS_MAP.ResumeMatch, null);
 
     if (!jobDescription.trim()) {
       setError("Please enter a job description.");
       return;
     }
-    if (!resume) {
+    if (!resumeText) {
       setError("Please upload your resume.");
       return;
     }
@@ -30,15 +39,12 @@ const ResumeMatch = () => {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("resume", resume);
-      formData.append("jobDescription", jobDescription);
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/jobs/match-resume`,
         {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobDescription, resumeText }),
         }
       );
       const data: IResumeMatchResponse = await response.json();
@@ -67,6 +73,11 @@ const ResumeMatch = () => {
     fetchMatchResume();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // hydrate from IndexedDB on mount
+    loadPreparedData();
+  }, [loadPreparedData]);
 
   return (
     <div className="w-full text-gray-60 mx-auto">

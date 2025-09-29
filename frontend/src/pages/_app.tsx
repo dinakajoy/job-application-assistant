@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import type { AppProps } from "next/app";
-import { UserOptionsProvider } from "@/context/UserOptionsContext";
-import { JobProvider } from "@/context/JobContext";
 import "@/styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -31,11 +29,5 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, []);
 
-  return (
-    <UserOptionsProvider>
-      <JobProvider>
-        <Component {...pageProps} />
-      </JobProvider>
-    </UserOptionsProvider>
-  );
+  return <Component {...pageProps} />;
 }
